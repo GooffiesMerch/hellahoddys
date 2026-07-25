@@ -13,7 +13,7 @@ function Index() {
   return (
     <div>
       <section className="border-b border-border">
-        <div className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
+        <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-24 sm:py-32">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Print on demand · Streetwear
           </p>
@@ -57,7 +57,7 @@ function Index() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-20">
+      <section className="mx-auto max-w-[1400px] px-6 lg:px-10 py-20">
         <div className="mb-10 flex items-end justify-between">
           <h2 className="text-3xl font-black tracking-tight">Featured</h2>
           <Link to="/shop" className="text-sm font-medium hover:underline">
@@ -90,7 +90,7 @@ function Index() {
       </section>
 
       <section className="border-t border-border bg-muted/40">
-        <div className="mx-auto max-w-6xl px-6 py-20">
+        <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-20">
           <div className="mb-10 flex items-end justify-between">
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Collections</p>

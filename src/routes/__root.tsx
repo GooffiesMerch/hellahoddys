@@ -159,7 +159,7 @@ function SiteFooter() {
   const year = new Date().getFullYear();
   return (
     <footer className="mt-24 border-t border-border bg-foreground text-background">
-      <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-16">
         <div className="grid gap-12 md:grid-cols-4">
           <div className="md:col-span-1">
             <img src={logoAsset.url} alt="Hella Hoodys" className="h-10 w-auto rounded-sm bg-background p-1.5" />
