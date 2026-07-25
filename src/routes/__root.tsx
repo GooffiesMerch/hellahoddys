@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import logoAsset from "@/assets/hella-hoodys-logo.jpg.asset.json";
+import { CartProvider, useCart } from "@/lib/cart";
 
 function NotFoundComponent() {
   return (
@@ -118,13 +119,15 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex flex-col bg-background text-foreground">
-        <SiteHeader />
-        <main className="flex-1">
-          <Outlet />
-        </main>
-        <SiteFooter />
-      </div>
+      <CartProvider>
+        <div className="min-h-screen flex flex-col bg-background text-foreground">
+          <SiteHeader />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+          <SiteFooter />
+        </div>
+      </CartProvider>
     </QueryClientProvider>
   );
 }
@@ -145,10 +148,7 @@ function SiteHeader() {
             <Link to="/shop" activeProps={{ className: "text-brand" }} className="hover:text-brand transition-colors">Shop</Link>
             <Link to="/about" activeProps={{ className: "text-brand" }} className="hover:text-brand transition-colors">About</Link>
           </nav>
-          <div className="flex items-center gap-4 text-sm">
-            <Link to="/shop" className="hidden sm:inline hover:text-brand transition-colors" aria-label="Search">Search</Link>
-            <Link to="/shop" className="rounded-md bg-brand px-3 py-1.5 font-semibold text-brand-foreground hover:opacity-90 transition-opacity">Bag (0)</Link>
-          </div>
+          <HeaderActions />
         </div>
       </header>
     </>
