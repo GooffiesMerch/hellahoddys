@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { getProduct, priceRange, formatPrice } from "@/lib/products";
+import { getProduct, priceRange, type Product } from "@/lib/products";
 
 export const Route = createFileRoute("/products/$handle")({
   loader: ({ params }) => {
@@ -32,15 +32,15 @@ export const Route = createFileRoute("/products/$handle")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { product } = Route.useLoaderData() as { product: Product };
   const [activeImg, setActiveImg] = useState(0);
 
   const optionValues = useMemo(() => {
     const map: Record<string, Set<string>> = {};
-    product.options.forEach((_, i) => {
+    product.options.forEach((_: string, i: number) => {
       const key = `opt${i + 1}` as "opt1" | "opt2" | "opt3";
       map[product.options[i]] = new Set(
-        product.variants.map((v) => v[key]).filter(Boolean),
+        product.variants.map((v) => v[key]).filter(Boolean) as string[],
       );
     });
     return Object.fromEntries(
@@ -67,7 +67,7 @@ function ProductPage() {
           </div>
           {product.images.length > 1 && (
             <div className="mt-3 grid grid-cols-6 gap-2">
-              {product.images.slice(0, 12).map((src, i) => (
+              {product.images.slice(0, 12).map((src: string, i: number) => (
                 <button
                   key={src}
                   onClick={() => setActiveImg(i)}
