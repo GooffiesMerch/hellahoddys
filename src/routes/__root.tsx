@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import logoAsset from "@/assets/hella-hoodys-logo.jpg.asset.json";
 
 function NotFoundComponent() {
   return (
@@ -132,22 +133,21 @@ function SiteHeader() {
   return (
     <>
       <div className="bg-foreground py-2 text-center text-xs font-medium uppercase tracking-[0.2em] text-background">
-        Free shipping on orders over $75 · Made to order, shipped worldwide
+        Free shipping on orders over $75 · <span className="text-brand">It's always hoody season</span>
       </div>
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/favicon.png" alt="Hella Hoodys" className="h-7 w-7 rounded-sm" />
-            <span className="text-lg font-black tracking-tight">HELLA HOODYS</span>
+          <Link to="/" className="flex items-center" aria-label="Hella Hoodys home">
+            <img src={logoAsset.url} alt="Hella Hoodys — It's always hoody season" className="h-10 w-auto" />
           </Link>
           <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">
-            <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">Home</Link>
-            <Link to="/shop" activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">Shop</Link>
-            <Link to="/about" activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">About</Link>
+            <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: "text-brand" }} className="hover:text-brand transition-colors">Home</Link>
+            <Link to="/shop" activeProps={{ className: "text-brand" }} className="hover:text-brand transition-colors">Shop</Link>
+            <Link to="/about" activeProps={{ className: "text-brand" }} className="hover:text-brand transition-colors">About</Link>
           </nav>
           <div className="flex items-center gap-4 text-sm">
-            <Link to="/shop" className="hidden sm:inline hover:opacity-70" aria-label="Search">Search</Link>
-            <Link to="/shop" className="rounded-md border border-border px-3 py-1.5 font-medium hover:bg-accent">Bag (0)</Link>
+            <Link to="/shop" className="hidden sm:inline hover:text-brand transition-colors" aria-label="Search">Search</Link>
+            <Link to="/shop" className="rounded-md bg-brand px-3 py-1.5 font-semibold text-brand-foreground hover:opacity-90 transition-opacity">Bag (0)</Link>
           </div>
         </div>
       </header>
@@ -162,12 +162,9 @@ function SiteFooter() {
       <div className="mx-auto max-w-6xl px-6 py-16">
         <div className="grid gap-12 md:grid-cols-4">
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2">
-              <img src="/favicon.png" alt="" className="h-8 w-8 rounded-sm bg-background p-1" />
-              <span className="text-lg font-black tracking-tight">HELLA HOODYS</span>
-            </div>
+            <img src={logoAsset.url} alt="Hella Hoodys" className="h-10 w-auto rounded-sm bg-background p-1.5" />
             <p className="mt-4 max-w-xs text-sm text-background/70">
-              Print-on-demand streetwear. Making urban fashion accessible to everyone.
+              Print-on-demand streetwear. It's always hoody season.
             </p>
           </div>
 
