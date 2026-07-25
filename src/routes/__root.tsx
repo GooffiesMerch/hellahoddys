@@ -205,7 +205,7 @@ function SiteFooter() {
               />
               <button
                 type="submit"
-                className="bg-background px-4 py-2 text-xs font-semibold uppercase tracking-wider text-foreground hover:opacity-90"
+                className="bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-wider text-brand-foreground hover:opacity-90"
               >
                 Join
               </button>
