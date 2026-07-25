@@ -27,7 +27,7 @@ function Index() {
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
               to="/shop"
-              className="inline-flex items-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+              className="inline-flex items-center rounded-md bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground transition hover:opacity-90"
             >
               Shop the collection
             </Link>
