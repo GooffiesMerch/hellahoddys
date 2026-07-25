@@ -130,28 +130,100 @@ function RootComponent() {
 
 function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link to="/" className="flex items-center gap-2">
-          <img src="/favicon.png" alt="Hella Hoodys" className="h-7 w-7 rounded-sm" />
-          <span className="text-lg font-black tracking-tight">HELLA HOODYS</span>
-        </Link>
-        <nav className="flex items-center gap-6 text-sm font-medium">
-          <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">Home</Link>
-          <Link to="/shop" activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">Shop</Link>
-          <Link to="/about" activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">About</Link>
-        </nav>
+    <>
+      <div className="bg-foreground py-2 text-center text-xs font-medium uppercase tracking-[0.2em] text-background">
+        Free shipping on orders over $75 · Made to order, shipped worldwide
       </div>
-    </header>
+      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/favicon.png" alt="Hella Hoodys" className="h-7 w-7 rounded-sm" />
+            <span className="text-lg font-black tracking-tight">HELLA HOODYS</span>
+          </Link>
+          <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">
+            <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">Home</Link>
+            <Link to="/shop" activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">Shop</Link>
+            <Link to="/about" activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">About</Link>
+          </nav>
+          <div className="flex items-center gap-4 text-sm">
+            <Link to="/shop" className="hidden sm:inline hover:opacity-70" aria-label="Search">Search</Link>
+            <Link to="/shop" className="rounded-md border border-border px-3 py-1.5 font-medium hover:bg-accent">Bag (0)</Link>
+          </div>
+        </div>
+      </header>
+    </>
   );
 }
 
 function SiteFooter() {
+  const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
-        <p>© {new Date().getFullYear()} Hella Hoodys. Print-on-demand streetwear.</p>
-        <p className="font-medium">Made for everyone.</p>
+    <footer className="mt-24 border-t border-border bg-foreground text-background">
+      <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="grid gap-12 md:grid-cols-4">
+          <div className="md:col-span-1">
+            <div className="flex items-center gap-2">
+              <img src="/favicon.png" alt="" className="h-8 w-8 rounded-sm bg-background p-1" />
+              <span className="text-lg font-black tracking-tight">HELLA HOODYS</span>
+            </div>
+            <p className="mt-4 max-w-xs text-sm text-background/70">
+              Print-on-demand streetwear. Making urban fashion accessible to everyone.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-background/60">Shop</h4>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li><Link to="/shop" className="hover:text-background/70">All products</Link></li>
+              <li><Link to="/shop" className="hover:text-background/70">Hoodies</Link></li>
+              <li><Link to="/shop" className="hover:text-background/70">T-shirts</Link></li>
+              <li><Link to="/shop" className="hover:text-background/70">New arrivals</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-background/60">Help</h4>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li><Link to="/about" className="hover:text-background/70">About us</Link></li>
+              <li><Link to="/about" className="hover:text-background/70">Shipping & returns</Link></li>
+              <li><Link to="/about" className="hover:text-background/70">Size guide</Link></li>
+              <li><Link to="/about" className="hover:text-background/70">Contact</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-background/60">Newsletter</h4>
+            <p className="mt-4 text-sm text-background/70">
+              Drops, restocks, and 10% off your first order.
+            </p>
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="mt-4 flex overflow-hidden rounded-md border border-background/30"
+            >
+              <input
+                type="email"
+                required
+                placeholder="you@email.com"
+                className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-background/40 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="bg-background px-4 py-2 text-xs font-semibold uppercase tracking-wider text-foreground hover:opacity-90"
+              >
+                Join
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-background/20 pt-6 text-xs text-background/60 sm:flex-row sm:items-center">
+          <p>© {year} Hella Hoodys. All rights reserved.</p>
+          <div className="flex gap-6">
+            <a href="#" className="hover:text-background">Privacy</a>
+            <a href="#" className="hover:text-background">Terms</a>
+            <a href="#" className="hover:text-background">Cookies</a>
+          </div>
+        </div>
       </div>
     </footer>
   );
