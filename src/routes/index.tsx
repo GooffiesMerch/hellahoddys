@@ -10,33 +10,59 @@ function Index() {
   const featured = products.filter((p) => p.images.length > 0).slice(0, 8);
   const withImages = products.filter((p) => p.images.length > 0);
   const promo = withImages.slice(8, 11);
+  const heroImages = withImages.slice(0, 4).map((p) => p.images[0]);
   return (
     <div>
       <section className="border-b border-border">
-        <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-24 sm:py-32">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Print on demand · Streetwear
-          </p>
-          <h1 className="max-w-3xl text-5xl font-black leading-[1.05] tracking-tight sm:text-7xl">
-            Hella Hoodys isn't just a clothing store — it's a fashion revolution.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-            Making urban streetwear accessible to everyone. Each piece is made to order,
-            so we cut waste — not corners.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Link
-              to="/shop"
-              className="inline-flex items-center rounded-md bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground transition hover:opacity-90"
-            >
-              Shop the collection
-            </Link>
-            <Link
-              to="/about"
-              className="inline-flex items-center rounded-md border border-border px-6 py-3 text-sm font-semibold hover:bg-accent"
-            >
-              Our story
-            </Link>
+        <div className="mx-auto grid max-w-[1400px] gap-12 px-6 lg:px-10 py-20 sm:py-28 lg:grid-cols-2 lg:items-center">
+          <div>
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-brand">
+              Print on demand · Streetwear
+            </p>
+            <h1 className="text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl xl:text-7xl">
+              It's always <span className="text-brand">hoody</span> season.
+            </h1>
+            <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+              Hella Hoodys isn't just a clothing store — it's a fashion revolution.
+              Made to order, shipped worldwide, no compromise on fit or ink.
+            </p>
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Link
+                to="/shop"
+                className="inline-flex items-center rounded-md bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground transition hover:opacity-90"
+              >
+                Shop the collection
+              </Link>
+              <Link
+                to="/about"
+                className="inline-flex items-center rounded-md border border-border px-6 py-3 text-sm font-semibold hover:bg-accent"
+              >
+                Our story
+              </Link>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div className="aspect-[3/4] overflow-hidden rounded-lg bg-muted">
+                  <img src={heroImages[0]} alt="Hella Hoodys featured hoodie" className="h-full w-full object-cover" />
+                </div>
+                <div className="aspect-square overflow-hidden rounded-lg bg-brand/20">
+                  <img src={heroImages[1]} alt="" className="h-full w-full object-cover mix-blend-multiply" />
+                </div>
+              </div>
+              <div className="space-y-4 pt-10">
+                <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                  <img src={heroImages[2]} alt="" className="h-full w-full object-cover" />
+                </div>
+                <div className="aspect-[3/4] overflow-hidden rounded-lg bg-muted">
+                  <img src={heroImages[3]} alt="" className="h-full w-full object-cover" />
+                </div>
+              </div>
+            </div>
+            <div className="absolute -bottom-4 -left-4 hidden rounded-md bg-brand px-4 py-2 text-xs font-bold uppercase tracking-widest text-brand-foreground shadow-lg sm:block">
+              {products.length}+ drops
+            </div>
           </div>
         </div>
       </section>
