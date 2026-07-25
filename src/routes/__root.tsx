@@ -77,21 +77,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Hella Hoodys — Print on Demand Streetwear" },
+      { name: "description", content: "HellaHoodys isn't just a clothing store; it's a fashion revolution. Print-on-demand hoodies, tees, and apparel for everyone." },
+      { property: "og:title", content: "Hella Hoodys — Print on Demand Streetwear" },
+      { property: "og:description", content: "Print-on-demand hoodies, tees, and apparel. Making urban streetwear accessible to everyone." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
   shellComponent: RootShell,
@@ -119,8 +117,42 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="min-h-screen flex flex-col bg-background text-foreground">
+        <SiteHeader />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <SiteFooter />
+      </div>
     </QueryClientProvider>
+  );
+}
+
+function SiteHeader() {
+  return (
+    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <Link to="/" className="flex items-center gap-2">
+          <img src="/favicon.png" alt="Hella Hoodys" className="h-7 w-7 rounded-sm" />
+          <span className="text-lg font-black tracking-tight">HELLA HOODYS</span>
+        </Link>
+        <nav className="flex items-center gap-6 text-sm font-medium">
+          <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">Home</Link>
+          <Link to="/shop" activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">Shop</Link>
+          <Link to="/about" activeProps={{ className: "underline underline-offset-4" }} className="hover:opacity-70">About</Link>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="border-t border-border">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
+        <p>© {new Date().getFullYear()} Hella Hoodys. Print-on-demand streetwear.</p>
+        <p className="font-medium">Made for everyone.</p>
+      </div>
+    </footer>
   );
 }
