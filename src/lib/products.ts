@@ -6,6 +6,7 @@ export interface Variant {
   opt1: string;
   opt2: string;
   opt3: string;
+  stock: number;
 }
 
 export interface Product {
@@ -21,6 +22,7 @@ export interface Product {
   variants: Variant[];
   minPrice: number | null;
   maxPrice: number | null;
+  stock: number;
 }
 
 export const products: Product[] = productsData as Product[];

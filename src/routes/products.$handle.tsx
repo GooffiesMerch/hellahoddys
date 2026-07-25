@@ -93,6 +93,11 @@ function ProductPage() {
           </h1>
           <p className="mt-4 text-2xl font-semibold">{priceRange(product)}</p>
 
+          <p className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-brand">
+            <span className="inline-block h-2 w-2 rounded-full bg-brand" />
+            In stock · {product.stock} available
+          </p>
+
           {Object.entries(optionValues).map(([name, vals]) => (
             <div key={name} className="mt-6">
               <p className="text-sm font-medium">{name}</p>
@@ -110,11 +115,9 @@ function ProductPage() {
           ))}
 
           <button
-            disabled
-            className="mt-8 w-full rounded-md bg-primary py-3 text-sm font-semibold text-primary-foreground opacity-60"
-            title="Checkout coming soon"
+            className="mt-8 w-full rounded-md bg-brand py-3 text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90"
           >
-            Add to cart — coming soon
+            Add to cart
           </button>
           <p className="mt-2 text-xs text-muted-foreground">
             Made to order · ships in 5–7 business days
