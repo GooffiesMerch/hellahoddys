@@ -13,7 +13,7 @@ function Index() {
   return (
     <div>
       <section className="border-b border-border">
-        <div className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
+        <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-24 sm:py-32">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Print on demand · Streetwear
           </p>
@@ -42,7 +42,7 @@ function Index() {
       </section>
 
       <section className="border-b border-border bg-muted/40">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 py-10 text-center sm:grid-cols-4">
+        <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-6 px-6 lg:px-10 py-10 text-center sm:grid-cols-4">
           {[
             { t: "Made to order", d: "Zero waste, zero warehouse" },
             { t: "Worldwide shipping", d: "Ships from the US" },
@@ -57,7 +57,7 @@ function Index() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-20">
+      <section className="mx-auto max-w-[1400px] px-6 lg:px-10 py-20">
         <div className="mb-10 flex items-end justify-between">
           <h2 className="text-3xl font-black tracking-tight">Featured</h2>
           <Link to="/shop" className="text-sm font-medium hover:underline">
@@ -90,7 +90,7 @@ function Index() {
       </section>
 
       <section className="border-t border-border bg-muted/40">
-        <div className="mx-auto max-w-6xl px-6 py-20">
+        <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-20">
           <div className="mb-10 flex items-end justify-between">
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Collections</p>
@@ -126,7 +126,7 @@ function Index() {
       </section>
 
       <section className="border-t border-border">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-2 md:items-center">
+        <div className="mx-auto grid max-w-[1400px] gap-10 px-6 lg:px-10 py-20 md:grid-cols-2 md:items-center">
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">The Hella way</p>
             <h2 className="text-4xl font-black tracking-tight sm:text-5xl">

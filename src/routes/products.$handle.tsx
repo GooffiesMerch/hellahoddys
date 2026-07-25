@@ -49,7 +49,7 @@ function ProductPage() {
   }, [product]);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-10">
       <Link to="/shop" className="text-sm text-muted-foreground hover:underline">
         ← Back to shop
       </Link>

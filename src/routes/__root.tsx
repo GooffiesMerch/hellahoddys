@@ -136,7 +136,7 @@ function SiteHeader() {
         Free shipping on orders over $75 · <span className="text-brand">It's always hoody season</span>
       </div>
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 lg:px-10 py-4">
           <Link to="/" className="flex items-center" aria-label="Hella Hoodys home">
             <img src={logoAsset.url} alt="Hella Hoodys — It's always hoody season" className="h-10 w-auto" />
           </Link>
@@ -159,7 +159,7 @@ function SiteFooter() {
   const year = new Date().getFullYear();
   return (
     <footer className="mt-24 border-t border-border bg-foreground text-background">
-      <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-16">
         <div className="grid gap-12 md:grid-cols-4">
           <div className="md:col-span-1">
             <img src={logoAsset.url} alt="Hella Hoodys" className="h-10 w-auto rounded-sm bg-background p-1.5" />
