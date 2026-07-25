@@ -60,9 +60,13 @@ function Index() {
                 </div>
               </div>
             </div>
-            <div className="absolute -bottom-4 -left-4 hidden rounded-md bg-brand px-4 py-2 text-xs font-bold uppercase tracking-widest text-brand-foreground shadow-lg sm:block">
-              {products.length}+ drops
-            </div>
+            <Link
+              to="/shop"
+              aria-label={`Browse all ${products.length} drops`}
+              className="absolute -bottom-4 -left-4 hidden rounded-md bg-brand px-4 py-2 text-xs font-bold uppercase tracking-widest text-brand-foreground shadow-lg transition hover:opacity-90 hover:-translate-y-0.5 sm:block"
+            >
+              {products.length}+ drops →
+            </Link>
           </div>
         </div>
       </section>
