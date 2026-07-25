@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { getProduct, priceRange, type Product } from "@/lib/products";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/products/$handle")({
   loader: ({ params }) => {
@@ -34,6 +35,9 @@ export const Route = createFileRoute("/products/$handle")({
 function ProductPage() {
   const { product } = Route.useLoaderData() as { product: Product };
   const [activeImg, setActiveImg] = useState(0);
+  const { addItem } = useCart();
+  const [selected, setSelected] = useState<Record<string, string>>({});
+  const [added, setAdded] = useState(false);
 
   const optionValues = useMemo(() => {
     const map: Record<string, Set<string>> = {};
@@ -47,6 +51,39 @@ function ProductPage() {
       Object.entries(map).map(([k, v]) => [k, Array.from(v)]),
     );
   }, [product]);
+
+  const matchedVariant = useMemo(() => {
+    return product.variants.find((v) => {
+      return product.options.every((name, i) => {
+        const key = `opt${i + 1}` as "opt1" | "opt2" | "opt3";
+        const chosen = selected[name];
+        if (!chosen) return true;
+        return v[key] === chosen;
+      });
+    });
+  }, [product, selected]);
+
+  const allSelected = product.options.every((name) => selected[name]);
+  const price = matchedVariant?.price
+    ? parseFloat(matchedVariant.price)
+    : product.minPrice ?? 0;
+
+  const handleAdd = () => {
+    const variantLabel = product.options
+      .map((n) => selected[n])
+      .filter(Boolean)
+      .join(" / ");
+    addItem({
+      handle: product.handle,
+      title: product.title,
+      image: product.images[0],
+      price,
+      variantSku: matchedVariant?.sku,
+      variantLabel: variantLabel || undefined,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1600);
+  };
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-10">
@@ -103,21 +140,34 @@ function ProductPage() {
               <p className="text-sm font-medium">{name}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {vals.map((v) => (
-                  <span
+                  <button
                     key={v}
-                    className="rounded-md border border-border px-3 py-1 text-sm"
+                    type="button"
+                    onClick={() => setSelected((s) => ({ ...s, [name]: v }))}
+                    className={`rounded-md border px-3 py-1 text-sm transition-colors ${
+                      selected[name] === v
+                        ? "border-brand bg-brand text-brand-foreground"
+                        : "border-border hover:border-foreground"
+                    }`}
                   >
                     {v}
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
           ))}
 
           <button
-            className="mt-8 w-full rounded-md bg-brand py-3 text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90"
+            type="button"
+            onClick={handleAdd}
+            disabled={product.options.length > 0 && !allSelected}
+            className="mt-8 w-full rounded-md bg-brand py-3 text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Add to cart
+            {added
+              ? "Added to cart ✓"
+              : product.options.length > 0 && !allSelected
+                ? "Select options"
+                : "Add to cart"}
           </button>
           <p className="mt-2 text-xs text-muted-foreground">
             Made to order · ships in 5–7 business days

@@ -155,6 +155,18 @@ function SiteHeader() {
   );
 }
 
+function HeaderActions() {
+  const { count } = useCart();
+  return (
+    <div className="flex items-center gap-4 text-sm">
+      <Link to="/shop" className="hidden sm:inline hover:text-brand transition-colors" aria-label="Search">Search</Link>
+      <Link to="/cart" className="rounded-md bg-brand px-3 py-1.5 font-semibold text-brand-foreground hover:opacity-90 transition-opacity">
+        Bag ({count})
+      </Link>
+    </div>
+  );
+}
+
 function SiteFooter() {
   const year = new Date().getFullYear();
   return (
