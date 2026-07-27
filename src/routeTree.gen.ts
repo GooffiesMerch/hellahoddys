@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ShopRouteImport } from './routes/shop'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AboutRouteImport } from './routes/about'
@@ -16,6 +17,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsHandleRouteImport } from './routes/products.$handle'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CollectionsRoute = CollectionsRouteImport.update({
   id: '/collections',
   path: '/collections',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/cart': typeof CartRoute
   '/collections': typeof CollectionsRouteWithChildren
+  '/shop': typeof ShopRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$handle': typeof ProductsHandleRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/cart': typeof CartRoute
   '/collections': typeof CollectionsRouteWithChildren
+  '/shop': typeof ShopRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$handle': typeof ProductsHandleRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/cart': typeof CartRoute
   '/collections': typeof CollectionsRouteWithChildren
+  '/shop': typeof ShopRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$handle': typeof ProductsHandleRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/cart'
     | '/collections'
+    | '/shop'
     | '/collections/$slug'
     | '/products/$handle'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/cart'
     | '/collections'
+    | '/shop'
     | '/collections/$slug'
     | '/products/$handle'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/cart'
     | '/collections'
+    | '/shop'
     | '/collections/$slug'
     | '/products/$handle'
   fileRoutesById: FileRoutesById
@@ -104,11 +116,19 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   CartRoute: typeof CartRoute
   CollectionsRoute: typeof CollectionsRouteWithChildren
+  ShopRoute: typeof ShopRoute
   ProductsHandleRoute: typeof ProductsHandleRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/collections': {
       id: '/collections'
       path: '/collections'
@@ -171,6 +191,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   CartRoute: CartRoute,
   CollectionsRoute: CollectionsRouteWithChildren,
+  ShopRoute: ShopRoute,
   ProductsHandleRoute: ProductsHandleRoute,
 }
 export const routeTree = rootRouteImport
