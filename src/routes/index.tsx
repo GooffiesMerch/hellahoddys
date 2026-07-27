@@ -11,7 +11,16 @@ export const Route = createFileRoute("/")({
 function Index() {
   const featured = products.filter((p) => p.images.length > 0).slice(0, 8);
   const withImages = products.filter((p) => p.images.length > 0);
-  const heroImages = withImages.slice(8, 12).map((p) => p.images[0]);
+  const heroHandles = [
+    "hella-argentina-unisex-hoodie",
+    "hella-barcelona-2-unisex-hoodie",
+    "hella-curacao-unisex-hoodie",
+    "hella-alabama-unisex-hoodie",
+  ];
+  const heroImages = heroHandles
+    .map((h) => withImages.find((p) => p.handle === h))
+    .filter((p): p is (typeof withImages)[number] => Boolean(p))
+    .map((p) => p.images[0]);
   return (
     <div>
       <section className="border-b border-border">
