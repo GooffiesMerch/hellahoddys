@@ -65,7 +65,7 @@ function Index() {
               </div>
               <div>
                 <dt className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Ships</dt>
-                <dd className="mt-1 text-2xl font-black tracking-tight">🌍 WW</dd>
+                <dd className="mt-1 text-2xl font-black tracking-tight">Worldwide Shipping</dd>
               </div>
             </dl>
           </div>
