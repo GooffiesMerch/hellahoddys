@@ -13,10 +13,10 @@ function Index() {
   const withImages = products.filter((p) => p.images.length > 0);
   const MOCKUP = "all-over-print-recycled-unisex-hoodie-white-front";
   const heroHandles = [
-    "hella-argentina-unisex-hoodie",
     "hella-alabama-unisex-hoodie",
-    "hella-barcelona-2-unisex-hoodie",
-    "hella-nyc-3-unisex-hoodie",
+    "hella-houston-unisex-hoodie-5",
+    "hella-philly-unisex-hoodie-3",
+    "hella-argentina-unisex-hoodie",
   ];
   const heroImages = heroHandles
     .map((h) => withImages.find((p) => p.handle === h))
