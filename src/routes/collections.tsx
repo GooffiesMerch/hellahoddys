@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { collections, collectionCount, collectionCover, productsIn } from "@/lib/collections";
+import { products, priceRange } from "@/lib/products";
 
 export const Route = createFileRoute("/collections")({
   head: () => ({
