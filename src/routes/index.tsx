@@ -3,6 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { products, priceRange } from "@/lib/products";
 import { collections, collectionCover, collectionCount } from "@/lib/collections";
 import { RankingsTicker } from "@/components/RankingsTicker";
+import heroWisconsin from "@/assets/hero-wisconsin.webp.asset.json";
+import heroOkstate from "@/assets/hero-okstate.webp.asset.json";
+import heroUcf from "@/assets/hero-ucf.webp.asset.json";
+import heroCarolina from "@/assets/hero-carolina.webp.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -11,17 +15,12 @@ export const Route = createFileRoute("/")({
 function Index() {
   const featured = products.filter((p) => p.images.length > 0).slice(0, 8);
   const withImages = products.filter((p) => p.images.length > 0);
-  const MOCKUP = "all-over-print-recycled-unisex-hoodie-white-front";
-  const heroHandles = [
-    "hella-alabama-unisex-hoodie",
-    "hella-houston-unisex-hoodie-5",
-    "hella-philly-unisex-hoodie-3",
-    "hella-argentina-unisex-hoodie",
+  const heroImages = [
+    { src: heroWisconsin.url, alt: "Hella Wisconsin Badgers hoodie" },
+    { src: heroOkstate.url, alt: "Hella Oklahoma State hoodie" },
+    { src: heroUcf.url, alt: "Hella UCF Knights hoodie" },
+    { src: heroCarolina.url, alt: "Hella South Carolina Gamecocks hoodie" },
   ];
-  const heroImages = heroHandles
-    .map((h) => withImages.find((p) => p.handle === h))
-    .filter((p): p is (typeof withImages)[number] => Boolean(p))
-    .map((p) => p.images.find((s) => s.includes(MOCKUP)) ?? p.images[0]);
   return (
     <div>
       <section className="border-b border-border">
@@ -71,14 +70,14 @@ function Index() {
           </div>
           <div className="relative">
             <div className="grid grid-cols-2 gap-4">
-              {heroImages.map((src, i) => (
+              {heroImages.map((img, i) => (
                 <div
                   key={i}
                   className="aspect-square overflow-hidden rounded-lg bg-brand/15"
                 >
                   <img
-                    src={src}
-                    alt={i === 0 ? "Hella Hoodys featured hoodie" : ""}
+                    src={img.src}
+                    alt={img.alt}
                     className="h-full w-full object-cover mix-blend-multiply"
                   />
                 </div>
