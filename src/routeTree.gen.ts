@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsHandleRouteImport } from './routes/products.$handle'
+import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsRoute = CollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -40,19 +47,28 @@ const ProductsHandleRoute = ProductsHandleRouteImport.update({
   path: '/products/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => CollectionsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/cart': typeof CartRoute
+  '/collections': typeof CollectionsRouteWithChildren
   '/shop': typeof ShopRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$handle': typeof ProductsHandleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/cart': typeof CartRoute
+  '/collections': typeof CollectionsRouteWithChildren
   '/shop': typeof ShopRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$handle': typeof ProductsHandleRoute
 }
 export interface FileRoutesById {
@@ -60,21 +76,46 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/cart': typeof CartRoute
+  '/collections': typeof CollectionsRouteWithChildren
   '/shop': typeof ShopRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$handle': typeof ProductsHandleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/cart' | '/shop' | '/products/$handle'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/cart'
+    | '/collections'
+    | '/shop'
+    | '/collections/$slug'
+    | '/products/$handle'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/cart' | '/shop' | '/products/$handle'
-  id: '__root__' | '/' | '/about' | '/cart' | '/shop' | '/products/$handle'
+  to:
+    | '/'
+    | '/about'
+    | '/cart'
+    | '/collections'
+    | '/shop'
+    | '/collections/$slug'
+    | '/products/$handle'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/cart'
+    | '/collections'
+    | '/shop'
+    | '/collections/$slug'
+    | '/products/$handle'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   CartRoute: typeof CartRoute
+  CollectionsRoute: typeof CollectionsRouteWithChildren
   ShopRoute: typeof ShopRoute
   ProductsHandleRoute: typeof ProductsHandleRoute
 }
@@ -86,6 +127,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections': {
+      id: '/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof CollectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -116,13 +164,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collections/$slug': {
+      id: '/collections/$slug'
+      path: '/$slug'
+      fullPath: '/collections/$slug'
+      preLoaderRoute: typeof CollectionsSlugRouteImport
+      parentRoute: typeof CollectionsRoute
+    }
   }
 }
+
+interface CollectionsRouteChildren {
+  CollectionsSlugRoute: typeof CollectionsSlugRoute
+}
+
+const CollectionsRouteChildren: CollectionsRouteChildren = {
+  CollectionsSlugRoute: CollectionsSlugRoute,
+}
+
+const CollectionsRouteWithChildren = CollectionsRoute._addFileChildren(
+  CollectionsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   CartRoute: CartRoute,
+  CollectionsRoute: CollectionsRouteWithChildren,
   ShopRoute: ShopRoute,
   ProductsHandleRoute: ProductsHandleRoute,
 }
