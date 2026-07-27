@@ -146,3 +146,12 @@
     color: var(--color-foreground);
   }
 }
+
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee-x 45s linear infinite;
+}

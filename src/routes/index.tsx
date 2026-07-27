@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { products, priceRange } from "@/lib/products";
 import { collections, collectionCover, collectionCount } from "@/lib/collections";
+import { RankingsTicker } from "@/components/RankingsTicker";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -16,6 +17,7 @@ function Index() {
       <section className="border-b border-border">
         <div className="mx-auto grid max-w-[1400px] gap-12 px-6 lg:px-10 py-20 sm:py-28 lg:grid-cols-2 lg:items-center">
           <div>
+            <RankingsTicker />
             <h1 className="text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl xl:text-7xl">
               It's always <span className="text-brand">HOODY</span> season.
             </h1>
