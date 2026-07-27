@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { products, priceRange } from "@/lib/products";
+import { collections, collectionCover, collectionCount } from "@/lib/collections";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -124,33 +125,39 @@ function Index() {
           <div className="mb-10 flex items-end justify-between">
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Collections</p>
-              <h2 className="text-3xl font-black tracking-tight">Shop by drop</h2>
+              <h2 className="text-3xl font-black tracking-tight">Shop by game</h2>
             </div>
-            <Link to="/shop" className="text-sm font-medium hover:underline">Browse all →</Link>
+            <Link to="/collections" className="text-sm font-medium hover:underline">All collections →</Link>
           </div>
-          <div className="grid gap-6 sm:grid-cols-3">
-            {promo.map((p, i) => (
-              <Link
-                key={p.handle}
-                to="/products/$handle"
-                params={{ handle: p.handle }}
-                className="group relative block aspect-[4/5] overflow-hidden rounded-md bg-muted"
-              >
-                <img
-                  src={p.images[0]}
-                  alt={p.title}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] opacity-80">
-                    {["New", "Trending", "Staff pick"][i] || "Featured"}
-                  </p>
-                  <p className="mt-1 line-clamp-2 text-lg font-bold">{p.title}</p>
-                </div>
-              </Link>
-            ))}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {collections.map((c) => {
+              const cover = collectionCover(c.slug);
+              const count = collectionCount(c.slug);
+              if (!cover) return null;
+              return (
+                <Link
+                  key={c.slug}
+                  to="/collections/$slug"
+                  params={{ slug: c.slug }}
+                  className="group relative block aspect-[4/5] overflow-hidden rounded-md bg-muted"
+                >
+                  <img
+                    src={cover}
+                    alt={c.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">
+                      {count} drops
+                    </p>
+                    <p className="mt-1 text-lg font-bold">{c.name}</p>
+                    <p className="mt-1 text-sm text-white/80">{c.tagline}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
