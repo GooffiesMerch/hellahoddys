@@ -25,7 +25,22 @@ export interface Product {
   stock: number;
 }
 
-export const products: Product[] = productsData as Product[];
+function angleRank(url: string): number {
+  // Lower rank = prefer this image. Front-only wins, then anything with
+  // "front" in the angle, then side/back as last resort.
+  const u = url.toLowerCase();
+  if (/-front[-.]/.test(u)) return 0;
+  if (/front/.test(u) && !/back/.test(u)) return 1;
+  if (/-(left|right)[-.]/.test(u)) return 3;
+  if (/back/.test(u)) return 4;
+  return 2;
+}
+
+const raw = productsData as Product[];
+export const products: Product[] = raw.map((p) => ({
+  ...p,
+  images: [...p.images].sort((a, b) => angleRank(a) - angleRank(b)),
+}));
 
 export function getProduct(handle: string): Product | undefined {
   return products.find((p) => p.handle === handle);
