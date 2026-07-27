@@ -19,7 +19,7 @@ function About() {
         About
       </p>
       <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">
-        A fashion revolution, one hoody at a time.
+        A fashion revolution, one HOODY at a time.
       </h1>
       <div className="mt-8 space-y-6 text-lg text-foreground/90">
         <p>

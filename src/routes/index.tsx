@@ -16,11 +16,8 @@ function Index() {
       <section className="border-b border-border">
         <div className="mx-auto grid max-w-[1400px] gap-12 px-6 lg:px-10 py-20 sm:py-28 lg:grid-cols-2 lg:items-center">
           <div>
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-brand">
-              Print on demand · Streetwear
-            </p>
             <h1 className="text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl xl:text-7xl">
-              It's always <span className="text-brand">hoody</span> season.
+              It's always <span className="text-brand">HOODY</span> season.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
               Hella Hoodys isn't just a clothing store — it's a fashion revolution.
@@ -169,7 +166,7 @@ function Index() {
               Streetwear without the waste.
             </h2>
             <p className="mt-5 max-w-lg text-muted-foreground">
-              Every hoody and tee is printed after you order it. No overstock, no landfill,
+              Every HOODY and tee is printed after you order it. No overstock, no landfill,
               no compromise on the fit or the ink. Just clean drops, made when you want them.
             </p>
             <Link
