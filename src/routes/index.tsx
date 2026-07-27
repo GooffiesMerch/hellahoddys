@@ -204,11 +204,24 @@ function Index() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            {withImages.slice(11, 15).map((p) => (
-              <div key={p.handle} className="aspect-square overflow-hidden rounded-md bg-muted">
-                <img src={p.images[0]} alt="" loading="lazy" className="h-full w-full object-cover" />
-              </div>
-            ))}
+            {withImages
+              .filter((p) => /zip/i.test(p.handle))
+              .slice(0, 4)
+              .map((p) => (
+                <Link
+                  key={p.handle}
+                  to="/products/$handle"
+                  params={{ handle: p.handle }}
+                  className="group aspect-square overflow-hidden rounded-md bg-muted"
+                >
+                  <img
+                    src={p.images[0]}
+                    alt={p.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </Link>
+              ))}
           </div>
         </div>
       </section>
