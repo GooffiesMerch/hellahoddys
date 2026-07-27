@@ -1,47 +1,100 @@
-const AP_TOP_25 = [
-  "Georgia", "Ohio State", "Michigan", "Alabama", "Texas",
-  "Oregon", "Penn State", "Notre Dame", "Ole Miss", "LSU",
-  "Tennessee", "Missouri", "Florida St", "Utah", "Oklahoma",
-  "Clemson", "Miami", "USC", "Kansas St", "Louisville",
-  "NC State", "Iowa", "Arizona", "Washington", "Auburn",
+import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { products } from "@/lib/products";
+
+// AP Top 25 → product handle in our catalog. Only teams we actually stock.
+const TOP_25: Array<{ rank: number; team: string; handle: string }> = [
+  { rank: 1, team: "Georgia", handle: "hella-g-unisex-college-hoodie" },
+  { rank: 2, team: "Michigan", handle: "hella-mi-unisex-hoodie" },
+  { rank: 3, team: "Alabama", handle: "hella-alabama-unisex-hoodie" },
+  { rank: 4, team: "Texas", handle: "hella-texas-unisex-zip-hoodie" },
+  { rank: 5, team: "Penn State", handle: "hella-p-s-unisex-college-hoodie" },
+  { rank: 6, team: "Tennessee", handle: "hella-t-unisex-hoodie" },
+  { rank: 7, team: "LSU", handle: "yellow-tiger-d-version-4-unisex-hoodie" },
+  { rank: 8, team: "Oklahoma", handle: "hella-okla-version-2-unisex-hoodie" },
+  { rank: 9, team: "Miami", handle: "hella-miami-unisex-hoodie-1" },
+  { rank: 10, team: "USC", handle: "hella-usc-unisex-hoodie" },
+  { rank: 11, team: "Utah", handle: "hella-utha-unisex-hoodie" },
+  { rank: 12, team: "Iowa", handle: "hela-iowa-unisex-zip-hoodie" },
+  { rank: 13, team: "Kansas State", handle: "hella-kansas-unisex-zip-hoodie" },
+  { rank: 14, team: "Arizona", handle: "hella-arizona-unisex-hoodie-2" },
+  { rank: 15, team: "Washington", handle: "hella-washington-unisex-hoodie-1" },
 ];
 
-function score(i: number) {
-  const a = 17 + ((i * 7) % 28);
-  const b = 3 + ((i * 5) % 21);
-  return `${a}\u2013${b}`;
-}
+const ENTRIES = TOP_25.map((t) => {
+  const p = products.find((pr) => pr.handle === t.handle);
+  return {
+    ...t,
+    image: p?.images?.[0] ?? "",
+    title: p?.title ?? t.team,
+  };
+}).filter((e) => e.image);
 
 export function RankingsTicker() {
-  const items = AP_TOP_25.map((team, i) => ({ rank: i + 1, team, score: score(i) }));
-  const loop = [...items, ...items];
+  const [i, setI] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setI((v) => (v + 1) % ENTRIES.length);
+    }, 2200);
+    return () => window.clearInterval(id);
+  }, []);
+
+  if (ENTRIES.length === 0) return null;
 
   return (
     <div
-      className="relative mb-6 overflow-hidden border-y border-border bg-background"
-      aria-label="College football AP Top 25 rankings ticker"
+      className="mb-6 overflow-hidden rounded-lg border border-border bg-background"
+      aria-label="AP Top 25 college football — team hoodies"
     >
-      <div className="relative flex h-11 items-center overflow-hidden">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-background to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-background to-transparent" />
-
-        <div className="flex w-max animate-marquee whitespace-nowrap">
-          <div className="flex items-center gap-10 px-6">
-            {loop.map((it, idx) => (
-              <div key={idx} className="flex items-center gap-2.5">
-                <span className="rounded-sm bg-brand px-1.5 py-0.5 text-[10px] font-black tracking-tighter text-brand-foreground">
-                  #{it.rank}
-                </span>
-                <span className="text-sm font-extrabold uppercase tracking-tight text-foreground">
-                  {it.team}
-                </span>
-                <span className="font-mono text-xs font-medium tabular-nums text-muted-foreground">
-                  {it.score}
-                </span>
-              </div>
-            ))}
-          </div>
+      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-1.5">
+        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+          AP Top 25 · Live Drop
+        </span>
+        <div className="flex gap-1">
+          {ENTRIES.map((_, idx) => (
+            <span
+              key={idx}
+              className={`h-1 w-1 rounded-full transition-colors ${
+                idx === i ? "bg-brand" : "bg-border"
+              }`}
+            />
+          ))}
         </div>
+      </div>
+      <div className="relative h-16 overflow-hidden">
+        {ENTRIES.map((e, idx) => (
+          <Link
+            key={e.handle}
+            to="/products/$handle"
+            params={{ handle: e.handle }}
+            className={`absolute inset-0 flex items-center gap-3 px-3 transition-all duration-500 ${
+              idx === i
+                ? "translate-y-0 opacity-100"
+                : "pointer-events-none translate-y-2 opacity-0"
+            }`}
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-brand text-sm font-black tabular-nums text-brand-foreground">
+              #{e.rank}
+            </span>
+            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-sm border border-border bg-muted">
+              <img
+                src={e.image}
+                alt={`${e.team} hoodie`}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-extrabold uppercase tracking-tight text-foreground">
+                {e.team}
+              </div>
+              <div className="truncate text-[11px] text-muted-foreground">
+                Shop the drop →
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );
