@@ -10,7 +10,6 @@ export const Route = createFileRoute("/")({
 function Index() {
   const featured = products.filter((p) => p.images.length > 0).slice(0, 8);
   const withImages = products.filter((p) => p.images.length > 0);
-  const promo = withImages.slice(8, 11);
   const heroImages = withImages.slice(0, 4).map((p) => p.images[0]);
   return (
     <div>
