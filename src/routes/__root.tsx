@@ -136,12 +136,12 @@ function SiteHeader() {
   return (
     <>
       <div className="bg-foreground py-2 text-center text-xs font-medium uppercase tracking-[0.2em] text-background">
-        Free shipping on orders over $75 · <span className="text-brand">It's always hoody season</span>
+        Free shipping on orders over $75 · <span className="text-brand">It's always HOODY season</span>
       </div>
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 lg:px-10 py-4">
           <Link to="/" className="flex items-center" aria-label="Hella Hoodys home">
-            <img src={logoAsset.url} alt="Hella Hoodys — It's always hoody season" className="h-10 w-auto" />
+            <img src={logoAsset.url} alt="Hella Hoodys — It's always HOODY season" className="h-10 w-auto" />
           </Link>
           <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">
             <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: "text-brand" }} className="hover:text-brand transition-colors">Home</Link>
@@ -177,7 +177,7 @@ function SiteFooter() {
           <div className="md:col-span-1">
             <img src={logoAsset.url} alt="Hella Hoodys" className="h-10 w-auto rounded-sm bg-background p-1.5" />
             <p className="mt-4 max-w-xs text-sm text-background/70">
-              Print-on-demand streetwear. It's always hoody season.
+              It's always HOODY season.
             </p>
           </div>
 
