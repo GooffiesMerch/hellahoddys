@@ -15,8 +15,12 @@ function Index() {
   return (
     <div>
       <section className="border-b border-border">
-        <div className="mx-auto grid max-w-[1400px] gap-12 px-6 lg:px-10 py-20 sm:py-28 lg:grid-cols-2 lg:items-center">
-          <div>
+        <div className="mx-auto grid max-w-[1400px] gap-12 px-6 lg:px-10 py-12 sm:py-16 lg:grid-cols-2 lg:items-start">
+          <div className="lg:pt-2">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand" />
+              New drop · Fall '26
+            </div>
             <RankingsTicker />
             <h1 className="text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl xl:text-7xl">
               It's always <span className="text-brand">HOODY</span> season.
@@ -25,7 +29,7 @@ function Index() {
               Hella Hoodys isn't just a clothing store — it's a fashion revolution.
               Made to order, shipped worldwide, no compromise on fit or ink.
             </p>
-            <div className="mt-10 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/shop"
                 className="inline-flex items-center rounded-md bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground transition hover:opacity-90"
@@ -39,6 +43,21 @@ function Index() {
                 Our story
               </Link>
             </div>
+
+            <dl className="mt-10 grid max-w-md grid-cols-3 gap-6 border-t border-border pt-6">
+              <div>
+                <dt className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Drops</dt>
+                <dd className="mt-1 text-2xl font-black tracking-tight">{products.length}+</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Teams</dt>
+                <dd className="mt-1 text-2xl font-black tracking-tight">120+</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Ships</dt>
+                <dd className="mt-1 text-2xl font-black tracking-tight">🌍 WW</dd>
+              </div>
+            </dl>
           </div>
           <div className="relative">
             <div className="grid grid-cols-2 gap-4">
