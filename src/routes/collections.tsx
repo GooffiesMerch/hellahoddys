@@ -147,6 +147,118 @@ function CollectionsIndex() {
             );
           })}
         </div>
+
+        {/* Trending now — horizontal product strip */}
+        <section className="mt-20">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand">Trending</p>
+              <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Most-wanted drops</h2>
+            </div>
+            <Link to="/shop" className="text-sm font-semibold text-brand hover:underline">
+              View all →
+            </Link>
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {products.slice(0, 4).map((p) => (
+              <Link
+                key={p.handle}
+                to="/products/$handle"
+                params={{ handle: p.handle }}
+                className="group overflow-hidden rounded-xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-lg"
+              >
+                <div className="aspect-square overflow-hidden bg-brand/10">
+                  <img
+                    src={p.images[0]}
+                    alt={p.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover mix-blend-multiply transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-4">
+                  <h3 className="line-clamp-1 font-bold tracking-tight">{p.title}</h3>
+                  <p className="mt-1 text-sm font-semibold text-brand">{priceRange(p)}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* New drop banner */}
+        <section className="mt-20 overflow-hidden rounded-2xl border border-border bg-gradient-to-r from-brand/20 via-brand/10 to-background">
+          <div className="grid items-center gap-8 lg:grid-cols-2">
+            <div className="p-8 lg:p-12">
+              <span className="inline-block rounded-full bg-brand px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-foreground">
+                New drop
+              </span>
+              <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
+                Fresh fits just landed.
+              </h2>
+              <p className="mt-3 max-w-md text-muted-foreground">
+                The latest hoodies, crews, and zip-ups are here. Limited runs, made to order, shipped worldwide.
+              </p>
+              <Link
+                to="/shop"
+                className="mt-6 inline-flex items-center rounded-md bg-foreground px-6 py-3 text-sm font-semibold text-background transition hover:opacity-90"
+              >
+                Shop new arrivals →
+              </Link>
+            </div>
+            <div className="grid grid-cols-3 gap-2 p-4 lg:p-8">
+              {products.slice(4, 7).map((p) => (
+                <Link
+                  key={p.handle}
+                  to="/products/$handle"
+                  params={{ handle: p.handle }}
+                  className="group aspect-square overflow-hidden rounded-xl bg-brand/10"
+                >
+                  <img
+                    src={p.images[0]}
+                    alt={p.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover mix-blend-multiply transition duration-500 group-hover:scale-105"
+                  />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Why Hella */}
+        <section className="mt-20 rounded-2xl border border-border bg-card p-8 sm:p-12">
+          <div className="text-center">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand">The Hella way</p>
+            <h2 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">Built different. Built to order.</h2>
+          </div>
+          <div className="mt-8 grid gap-6 sm:grid-cols-3">
+            {[
+              { title: "Made to order", body: "Every piece is printed fresh after you order. No wasted stock, no stale inventory." },
+              { title: "Worldwide shipping", body: "From campus to coast, we ship Hella drops to fans around the globe." },
+              { title: "Premium prints", body: "High-quality ink on soft, durable blanks that hold up wash after wash." },
+            ].map((f) => (
+              <div key={f.title} className="rounded-xl border border-border bg-background p-6 text-center transition hover:shadow-md">
+                <h3 className="text-lg font-bold tracking-tight">{f.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="mt-20 text-center">
+          <h2 className="text-3xl font-black tracking-tight sm:text-4xl">
+            Not sure where to start?
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
+            Browse the full catalog and filter by your team, league, or city.
+          </p>
+          <Link
+            to="/shop"
+            className="mt-6 inline-flex items-center rounded-full bg-brand px-8 py-4 text-sm font-black uppercase tracking-widest text-brand-foreground shadow-lg transition hover:brightness-105"
+          >
+            Shop everything
+          </Link>
+        </section>
       </section>
     </div>
   );
