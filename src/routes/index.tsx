@@ -11,7 +11,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const featured = products.filter((p) => p.images.length > 0).slice(0, 8);
   const withImages = products.filter((p) => p.images.length > 0);
-  const heroImages = withImages.slice(0, 4).map((p) => p.images[0]);
+  const heroImages = withImages.slice(8, 12).map((p) => p.images[0]);
   return (
     <div>
       <section className="border-b border-border">
@@ -61,22 +61,18 @@ function Index() {
           </div>
           <div className="relative">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <div className="aspect-[3/4] overflow-hidden rounded-lg bg-muted">
-                  <img src={heroImages[0]} alt="Hella Hoodys featured hoodie" className="h-full w-full object-cover" />
+              {heroImages.map((src, i) => (
+                <div
+                  key={i}
+                  className="aspect-square overflow-hidden rounded-lg bg-brand/15"
+                >
+                  <img
+                    src={src}
+                    alt={i === 0 ? "Hella Hoodys featured hoodie" : ""}
+                    className="h-full w-full object-cover mix-blend-multiply"
+                  />
                 </div>
-                <div className="aspect-square overflow-hidden rounded-lg bg-brand/20">
-                  <img src={heroImages[1]} alt="" className="h-full w-full object-cover mix-blend-multiply" />
-                </div>
-              </div>
-              <div className="space-y-4 pt-10">
-                <div className="aspect-square overflow-hidden rounded-lg bg-muted">
-                  <img src={heroImages[2]} alt="" className="h-full w-full object-cover" />
-                </div>
-                <div className="aspect-[3/4] overflow-hidden rounded-lg bg-muted">
-                  <img src={heroImages[3]} alt="" className="h-full w-full object-cover" />
-                </div>
-              </div>
+              ))}
             </div>
             <Link
               to="/shop"
