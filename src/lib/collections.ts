@@ -13,7 +13,18 @@ const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
 const hasWord = (t: string, words: string[]) =>
   words.some((w) => new RegExp(`(^|[^a-z])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^a-z])`).test(t));
 
-const SOCCER = ["soccer", "futbol", "barcelona", "madrid", "liverpool", "arsenal", "chelsea", "juventus", "psg", "milan", "dortmund", "bayern", "benfica", "porto", "argentina", "brazil", "portugal", "netherlands", "croatia", "mexico national"];
+const SOCCER = [
+  "soccer", "futbol", "fifa", "world cup", "mls", "nwsl", "current", "fc",
+  // clubs
+  "barcelona", "madrid", "liverpool", "arsenal", "chelsea", "juventus", "psg", "milan", "dortmund", "bayern", "benfica", "porto",
+  // World Cup 2026 nations
+  "mexico", "south korea", "korea", "south africa", "czech republic", "czechia", "belgium", "new zealand",
+  "iran", "egypt", "canada", "qatar", "bosnia", "herzegovina", "switzerland", "swiss", "spain", "saudi arabia",
+  "cape verde", "uruguay", "brazil", "brasil", "scotland", "morocco", "haiti", "france", "senegal", "norway", "iraq",
+  "australia", "paraguay", "turkey", "turkiye", "argentina", "austria", "jordan", "algeria",
+  "germany", "ecuador", "ivory coast", "curacao", "portugal", "colombia", "uzbekistan", "el salvador",
+  "netherlands", "holland", "japan", "tunisia", "sweden", "england", "croatia", "ghana", "panama",
+];
 // Pro basketball — all 30 NBA franchises (mascots + market names)
 const BASKETBALL = [
   "basketball", "nba", "wnba", "hoops",
