@@ -219,7 +219,7 @@ function CollectionsMenu() {
                     className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-muted"
                   >
                     <span className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-muted">
-                      {count > 0 && cover ? (
+                      {!c.comingSoon && count > 0 && cover ? (
                         <img src={cover} alt="" loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-110" />
                       ) : null}
                     </span>
@@ -228,7 +228,7 @@ function CollectionsMenu() {
                         {c.name}
                       </span>
                       <span className="block truncate text-xs text-muted-foreground">
-                        {count > 0 ? `${count} drops` : "Coming soon"}
+                        {!c.comingSoon && count > 0 ? `${count} drops` : "Coming soon"}
                       </span>
                     </span>
                   </Link>

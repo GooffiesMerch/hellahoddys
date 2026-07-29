@@ -5,6 +5,8 @@ export interface Collection {
   name: string;
   tagline: string;
   match: (p: Product) => boolean;
+  /** show a "Coming soon" placeholder instead of covers/counts */
+  comingSoon?: boolean;
 }
 
 const text = (p: Product) => (p.title + " " + p.tags + " " + p.type).toLowerCase();
@@ -146,6 +148,7 @@ export const collections: Collection[] = [
     slug: "hella-tees",
     name: "Hella Tees",
     tagline: "Everyday tees, HOODY energy.",
+    comingSoon: true,
     match: (p) => {
       const t = text(p);
       return has(t, ["tee", "t-shirt", "tshirt"]);
