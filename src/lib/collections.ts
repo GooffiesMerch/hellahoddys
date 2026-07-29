@@ -44,7 +44,25 @@ const NBA_CITIES = [
   "golden state", "san francisco", "los angeles", "l.a.", "phoenix", "sacramento",
   "dallas", "houston", "memphis", "new orleans", "san antonio",
 ];
-const BASEBALL = ["baseball", "mlb", "yankees", "dodgers", "rays", "red sox", "white sox", "cubs", "braves", "astros", "mets"];
+// Pro baseball — all 30 MLB franchises (mascots)
+const MLB_TEAMS = [
+  "baseball", "mlb",
+  "orioles", "red sox", "yankees", "rays", "blue jays", "jays",
+  "white sox", "guardians", "indians", "tigers", "royals", "twins",
+  "astros", "angels", "athletics", "a's", "mariners", "rangers",
+  "braves", "marlins", "mets", "phillies", "nationals", "nats",
+  "cubs", "reds", "brewers", "pirates", "cardinals",
+  "diamondbacks", "dbacks", "rockies", "dodgers", "padres", "giants",
+];
+// MLB markets — city-name drops (e.g. "HELLA BALTIMORE")
+const MLB_CITIES = [
+  "baltimore", "boston", "bronx", "tampa", "tampa bay", "toronto",
+  "cleveland", "detroit", "kansas city", "minnesota", "minneapolis",
+  "houston", "anaheim", "oakland", "seattle", "arlington",
+  "atlanta", "miami", "queens", "philadelphia", "philly", "washington",
+  "chicago", "cincinnati", "milwaukee", "pittsburgh", "st louis", "st. louis",
+  "arizona", "phoenix", "colorado", "denver", "los angeles", "san diego", "san francisco",
+];
 const FOOTBALL = ["ncaa", "nfl", "college", "university", "football", "crimson", "bulldogs", "longhorns", "buckeyes", "wolverines", "gators", "aggies", "sooners", "badgers", "gamecocks", "ucf", "wildcats", "cougars", "panthers"];
 
 // Pro football — all 32 franchises (mascots + city/market names)
