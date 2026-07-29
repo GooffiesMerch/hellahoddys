@@ -77,7 +77,13 @@ export const collections: Collection[] = [
     slug: "basketball",
     name: "Basketball",
     tagline: "Hardwood heat, off-court fits.",
-    match: (p) => has(text(p), BASKETBALL),
+    match: (p) => {
+      const t = text(p);
+      if (hasWord(t, BASKETBALL)) return true;
+      // city-name drops count as hoops gear unless they're tagged to another league/sport
+      if (has(t, ["ncaa", "university", "college", "nfl", "mlb", "baseball", "football", "soccer"])) return false;
+      return hasWord(t, NBA_CITIES);
+    },
   },
   {
     slug: "baseball",
