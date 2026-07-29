@@ -135,7 +135,7 @@ function CollectionsIndex() {
                     <h3 className="text-lg font-bold tracking-tight">{c.name}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">{c.tagline}</p>
                   </div>
-                  {thumbs.length > 0 && (
+                  {!c.comingSoon && thumbs.length > 0 && (
                     <div className="mt-auto grid grid-cols-3 gap-2">
                       {thumbs.map((src, i) => (
                         <div key={i} className="aspect-square overflow-hidden rounded-md bg-brand/5">
