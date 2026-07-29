@@ -112,7 +112,7 @@ function CollectionsIndex() {
                 className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="relative aspect-[5/4] overflow-hidden bg-brand/10">
-                  {count === 0 ? (
+                  {c.comingSoon || count === 0 ? (
                     <div className="flex h-full w-full items-center justify-center">
                       <span className="text-sm font-bold uppercase tracking-[0.3em] text-brand">Coming Soon</span>
                     </div>
@@ -124,7 +124,7 @@ function CollectionsIndex() {
                       className="h-full w-full object-cover mix-blend-multiply transition duration-500 group-hover:scale-105"
                     />
                   ) : null}
-                  {count > 0 && (
+                  {!c.comingSoon && count > 0 && (
                     <div className="absolute right-3 top-3 rounded-full bg-background/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-foreground backdrop-blur">
                       {count} drops
                     </div>
