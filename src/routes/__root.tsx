@@ -199,7 +199,7 @@ function CollectionsMenu() {
 
       {open && (
         <div className="absolute left-1/2 top-full z-50 w-[min(92vw,720px)] -translate-x-1/2 pt-4">
-          <div className="overflow-hidden rounded-2xl border border-border bg-background shadow-2xl ring-1 ring-brand/20 animate-in fade-in slide-in-from-top-2">
+          <div className="overflow-hidden rounded-2xl border border-border bg-background shadow-2xl ring-1 ring-brand/20">
             <div className="flex items-center justify-between border-b border-border bg-brand/10 px-5 py-3">
               <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-brand">Shop by collection</p>
               <Link to="/collections" onClick={() => setOpen(false)} className="text-xs font-semibold hover:text-brand">
