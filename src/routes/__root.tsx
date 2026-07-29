@@ -219,7 +219,7 @@ function CollectionsMenu() {
                     className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-muted"
                   >
                     <span className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-muted">
-                      {cover ? (
+                      {count > 0 && cover ? (
                         <img src={cover} alt="" loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-110" />
                       ) : null}
                     </span>
