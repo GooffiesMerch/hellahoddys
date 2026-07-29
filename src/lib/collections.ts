@@ -13,7 +13,18 @@ const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
 const hasWord = (t: string, words: string[]) =>
   words.some((w) => new RegExp(`(^|[^a-z])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^a-z])`).test(t));
 
-const SOCCER = ["soccer", "futbol", "barcelona", "madrid", "liverpool", "arsenal", "chelsea", "juventus", "psg", "milan", "dortmund", "bayern", "benfica", "porto", "argentina", "brazil", "portugal", "netherlands", "croatia", "mexico national"];
+const SOCCER = [
+  "soccer", "futbol", "fifa", "world cup", "mls", "nwsl", "current", "fc",
+  // clubs
+  "barcelona", "madrid", "liverpool", "arsenal", "chelsea", "juventus", "psg", "milan", "dortmund", "bayern", "benfica", "porto",
+  // World Cup 2026 nations
+  "mexico", "south korea", "korea", "south africa", "czech republic", "czechia", "belgium", "new zealand",
+  "iran", "egypt", "canada", "qatar", "bosnia", "herzegovina", "switzerland", "swiss", "spain", "saudi arabia",
+  "cape verde", "uruguay", "brazil", "brasil", "scotland", "morocco", "haiti", "france", "senegal", "norway", "iraq",
+  "australia", "paraguay", "turkey", "turkiye", "argentina", "austria", "jordan", "algeria",
+  "germany", "ecuador", "ivory coast", "curacao", "portugal", "colombia", "uzbekistan", "el salvador",
+  "netherlands", "holland", "japan", "tunisia", "sweden", "england", "croatia", "ghana", "panama",
+];
 // Pro basketball — all 30 NBA franchises (mascots + market names)
 const BASKETBALL = [
   "basketball", "nba", "wnba", "hoops",
@@ -71,7 +82,13 @@ export const collections: Collection[] = [
     slug: "soccer",
     name: "Soccer",
     tagline: "Clubs, countries, and kits worth wearing.",
-    match: (p) => has(text(p), SOCCER),
+    match: (p) => {
+      const t = text(p);
+      // "New England" is an NFL market, not the England national team
+      const cleaned = t.replace(/new england|n england/g, "");
+      if (has(cleaned, ["ncaa", "university", "nfl", "mlb", "nba"])) return cleaned.includes("soccer");
+      return hasWord(cleaned, SOCCER);
+    },
   },
   {
     slug: "basketball",
