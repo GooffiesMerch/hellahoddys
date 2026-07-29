@@ -124,7 +124,14 @@ export const collections: Collection[] = [
     slug: "baseball",
     name: "Baseball",
     tagline: "Bases loaded. Fits stacked.",
-    match: (p) => has(text(p), BASEBALL),
+    match: (p) => {
+      const t = text(p);
+      if (t.includes("mlb") || t.includes("baseball")) return true;
+      // keep other leagues/sports out of the diamond drop
+      if (has(t, ["ncaa", "university", "college", "nfl", "nba", "basketball", "soccer", "football"])) return false;
+      if (hasWord(t, MLB_TEAMS)) return true;
+      return hasWord(t, MLB_CITIES);
+    },
   },
   {
     slug: "womens-crop-zip-hoodys",
