@@ -11,7 +11,16 @@ const text = (p: Product) => (p.title + " " + p.tags + " " + p.type).toLowerCase
 const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
 
 const SOCCER = ["soccer", "futbol", "barcelona", "madrid", "liverpool", "arsenal", "chelsea", "juventus", "psg", "milan", "dortmund", "bayern", "benfica", "porto", "argentina", "brazil", "portugal", "netherlands", "croatia", "mexico national"];
-const BASKETBALL = ["basketball", "nba", "lakers", "celtics", "warriors", "knicks", "bulls", "heat", "hoops", "wnba"];
+// Pro basketball — all 30 NBA franchises (mascots + distinctive market names)
+const BASKETBALL = [
+  "basketball", "nba", "wnba", "hoops",
+  "celtics", "nets", "knicks", "76ers", "sixers", "raptors",
+  "bulls", "cavaliers", "cavs", "pistons", "pacers", "bucks",
+  "hawks", "hornets", "heat", "magic", "wizards",
+  "nuggets", "timberwolves", "thunder", "okc", "trail blazers", "blazers", "jazz",
+  "warriors", "clippers", "lakers", "suns", "kings",
+  "mavericks", "mavs", "rockets", "grizzlies", "pelicans", "spurs",
+];
 const BASEBALL = ["baseball", "mlb", "yankees", "dodgers", "rays", "red sox", "white sox", "cubs", "braves", "astros", "mets"];
 const FOOTBALL = ["ncaa", "nfl", "college", "university", "football", "crimson", "bulldogs", "longhorns", "buckeyes", "wolverines", "gators", "aggies", "sooners", "badgers", "gamecocks", "ucf", "wildcats", "cougars", "panthers"];
 
