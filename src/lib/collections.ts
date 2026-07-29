@@ -7,59 +7,62 @@ export interface Collection {
   match: (p: Product) => boolean;
 }
 
+const text = (p: Product) => (p.title + " " + p.tags + " " + p.type).toLowerCase();
 const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
+
+const SOCCER = ["soccer", "futbol", "barcelona", "madrid", "liverpool", "arsenal", "chelsea", "juventus", "psg", "milan", "dortmund", "bayern", "benfica", "porto", "argentina", "brazil", "portugal", "netherlands", "croatia", "mexico national"];
+const BASKETBALL = ["basketball", "nba", "lakers", "celtics", "warriors", "knicks", "bulls", "heat", "hoops", "wnba"];
+const BASEBALL = ["baseball", "mlb", "yankees", "dodgers", "rays", "red sox", "white sox", "cubs", "braves", "astros", "mets"];
+const FOOTBALL = ["ncaa", "nfl", "college", "university", "football", "crimson", "bulldogs", "longhorns", "buckeyes", "wolverines", "gators", "aggies", "sooners", "badgers", "gamecocks", "ucf", "wildcats", "cougars", "panthers"];
 
 export const collections: Collection[] = [
   {
-    slug: "ncaa",
-    name: "NCAA · College Football",
+    slug: "college-football",
+    name: "College Football",
     tagline: "Reppin' every campus, every Saturday.",
-    match: (p) => {
-      const t = (p.title + " " + p.tags).toLowerCase();
-      return has(t, ["ncaa", "university", "college", "gamecocks", "wildcats", "tigers", "cougars", "panthers"]);
-    },
+    match: (p) => has(text(p), FOOTBALL),
   },
   {
-    slug: "nfl",
-    name: "NFL · Sunday Kickoff",
-    tagline: "Game-day fits for every franchise.",
-    match: (p) => (p.title + " " + p.tags).toLowerCase().includes("nfl"),
+    slug: "soccer",
+    name: "Soccer",
+    tagline: "Clubs, countries, and kits worth wearing.",
+    match: (p) => has(text(p), SOCCER),
   },
   {
-    slug: "mlb",
-    name: "Baseball · Diamond Season",
+    slug: "basketball",
+    name: "Basketball",
+    tagline: "Hardwood heat, off-court fits.",
+    match: (p) => has(text(p), BASKETBALL),
+  },
+  {
+    slug: "baseball",
+    name: "Baseball",
     tagline: "Bases loaded. Fits stacked.",
-    match: (p) => (p.title + " " + p.tags).toLowerCase().includes("baseball"),
+    match: (p) => has(text(p), BASEBALL),
   },
   {
-    slug: "greek",
-    name: "Greek Life",
-    tagline: "For the letters that raised you.",
+    slug: "womens-crop-zip-hoodys",
+    name: "Womens Crop Zip Hoodys",
+    tagline: "Cropped, zipped, and ready to go.",
     match: (p) => {
-      const t = (p.title + " " + p.tags).toLowerCase();
-      return has(t, ["sigma", "kappa", "alpha", "delta", "omega", " phi", " chi", " zeta", " beta"]);
+      const t = text(p);
+      return t.includes("crop") || (t.includes("zip") && t.includes("women"));
     },
   },
   {
-    slug: "valentines",
-    name: "Valentine's Drop",
-    tagline: "Cupid-approved crewnecks and hoodies.",
+    slug: "hella-tees",
+    name: "Hella Tees",
+    tagline: "Everyday tees, HOODY energy.",
     match: (p) => {
-      const t = (p.title + " " + p.tags).toLowerCase();
-      return has(t, ["valentine", "cupid", "vday", "v-day"]);
+      const t = text(p);
+      return has(t, ["tee", "t-shirt", "tshirt"]);
     },
   },
   {
-    slug: "streetwear",
-    name: "Streetwear · Cities & Countries",
-    tagline: "From the block to the border.",
-    match: (p) => {
-      const t = (p.title + " " + p.tags).toLowerCase();
-      const isOther =
-        has(t, ["ncaa", "university", "college", "nfl", "baseball", "valentine", "cupid", "vday"]) ||
-        has(t, ["sigma", "kappa", "alpha", "delta", "omega", " phi", " chi", " zeta", " beta"]);
-      return !isOther;
-    },
+    slug: "nat-leggings",
+    name: "N.A.T Leggings",
+    tagline: "Not A Typical legging.",
+    match: (p) => has(text(p), ["legging", "n.a.t", "nat "]),
   },
 ];
 
