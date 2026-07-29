@@ -129,8 +129,8 @@ export const collections: Collection[] = [
       if (t.includes("mlb") || t.includes("baseball")) return true;
       // keep other leagues/sports out of the diamond drop
       if (has(t, ["ncaa", "university", "college", "nfl", "nba", "basketball", "soccer", "football"])) return false;
-      if (hasWord(t, MLB_TEAMS)) return true;
-      return hasWord(t, MLB_CITIES);
+      // city-only drops (e.g. "HELLA TAMPA BAY") count when no other league claims them
+      return hasWord(t, MLB_TEAMS) || hasWord(t, MLB_CITIES);
     },
   },
   {
