@@ -9,9 +9,30 @@ export interface Collection {
 
 const text = (p: Product) => (p.title + " " + p.tags + " " + p.type).toLowerCase();
 const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
+// whole-word match so "nba" doesn't hit "greenbay" and "hawks" doesn't hit "jayhawks"
+const hasWord = (t: string, words: string[]) =>
+  words.some((w) => new RegExp(`(^|[^a-z])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^a-z])`).test(t));
 
 const SOCCER = ["soccer", "futbol", "barcelona", "madrid", "liverpool", "arsenal", "chelsea", "juventus", "psg", "milan", "dortmund", "bayern", "benfica", "porto", "argentina", "brazil", "portugal", "netherlands", "croatia", "mexico national"];
-const BASKETBALL = ["basketball", "nba", "lakers", "celtics", "warriors", "knicks", "bulls", "heat", "hoops", "wnba"];
+// Pro basketball — all 30 NBA franchises (mascots + market names)
+const BASKETBALL = [
+  "basketball", "nba", "wnba", "hoops",
+  "celtics", "nets", "knicks", "76ers", "sixers", "raptors",
+  "bulls", "cavaliers", "cavs", "pistons", "pacers", "bucks",
+  "hawks", "hornets", "heat", "magic", "wizards",
+  "nuggets", "timberwolves", "thunder", "blazers", "jazz",
+  "warriors", "clippers", "lakers", "suns", "kings",
+  "mavericks", "mavs", "rockets", "grizzlies", "pelicans", "spurs",
+];
+// NBA markets — used for city-name products (e.g. "HELLA BOSTON")
+const NBA_CITIES = [
+  "boston", "brooklyn", "new york", "philadelphia", "philly", "toronto",
+  "chicago", "cleveland", "detroit", "indiana", "indianapolis", "milwaukee",
+  "atlanta", "charlotte", "miami", "orlando", "washington",
+  "denver", "minnesota", "minneapolis", "oklahoma city", "okc", "portland", "utah", "salt lake",
+  "golden state", "san francisco", "los angeles", "l.a.", "phoenix", "sacramento",
+  "dallas", "houston", "memphis", "new orleans", "san antonio",
+];
 const BASEBALL = ["baseball", "mlb", "yankees", "dodgers", "rays", "red sox", "white sox", "cubs", "braves", "astros", "mets"];
 const FOOTBALL = ["ncaa", "nfl", "college", "university", "football", "crimson", "bulldogs", "longhorns", "buckeyes", "wolverines", "gators", "aggies", "sooners", "badgers", "gamecocks", "ucf", "wildcats", "cougars", "panthers"];
 
@@ -56,7 +77,13 @@ export const collections: Collection[] = [
     slug: "basketball",
     name: "Basketball",
     tagline: "Hardwood heat, off-court fits.",
-    match: (p) => has(text(p), BASKETBALL),
+    match: (p) => {
+      const t = text(p);
+      if (hasWord(t, BASKETBALL)) return true;
+      // city-name drops count as hoops gear unless they're tagged to another league/sport
+      if (has(t, ["ncaa", "university", "college", "nfl", "mlb", "baseball", "football", "soccer"])) return false;
+      return hasWord(t, NBA_CITIES);
+    },
   },
   {
     slug: "baseball",
