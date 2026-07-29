@@ -82,7 +82,13 @@ export const collections: Collection[] = [
     slug: "soccer",
     name: "Soccer",
     tagline: "Clubs, countries, and kits worth wearing.",
-    match: (p) => has(text(p), SOCCER),
+    match: (p) => {
+      const t = text(p);
+      // "New England" is an NFL market, not the England national team
+      const cleaned = t.replace(/new england|n england/g, "");
+      if (has(cleaned, ["ncaa", "university", "nfl", "mlb", "nba"])) return cleaned.includes("soccer");
+      return hasWord(cleaned, SOCCER);
+    },
   },
   {
     slug: "basketball",
