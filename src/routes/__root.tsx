@@ -7,12 +7,13 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import logoAsset from "@/assets/hella-hoodys-logo.jpg.asset.json";
 import { CartProvider, useCart } from "@/lib/cart";
+import { collections, collectionCount, collectionCover } from "@/lib/collections";
 
 function NotFoundComponent() {
   return (
@@ -146,7 +147,7 @@ function SiteHeader() {
           <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">
             <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: "text-brand" }} className="hover:text-brand transition-colors">Home</Link>
             <Link to="/shop" activeProps={{ className: "text-brand" }} className="hover:text-brand transition-colors">Shop</Link>
-            <Link to="/collections" activeProps={{ className: "text-brand" }} className="hover:text-brand transition-colors">Collections</Link>
+            <CollectionsMenu />
             <Link to="/about" activeProps={{ className: "text-brand" }} className="hover:text-brand transition-colors">About</Link>
           </nav>
           <HeaderActions />
@@ -186,8 +187,8 @@ function SiteFooter() {
             <ul className="mt-4 space-y-2 text-sm">
               <li><Link to="/shop" className="hover:text-background/70">All products</Link></li>
               <li><Link to="/collections" className="hover:text-background/70">All collections</Link></li>
-              <li><Link to="/collections/$slug" params={{ slug: "ncaa" }} className="hover:text-background/70">NCAA</Link></li>
-              <li><Link to="/collections/$slug" params={{ slug: "nfl" }} className="hover:text-background/70">NFL</Link></li>
+              <li><Link to="/collections/$slug" params={{ slug: "college-football" }} className="hover:text-background/70">College Football</Link></li>
+              <li><Link to="/collections/$slug" params={{ slug: "soccer" }} className="hover:text-background/70">Soccer</Link></li>
             </ul>
           </div>
 
