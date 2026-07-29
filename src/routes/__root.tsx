@@ -158,6 +158,91 @@ function SiteHeader() {
 }
 
 function HeaderActions() {
+  return <HeaderActionsInner />;
+}
+
+function CollectionsMenu() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="true"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 hover:text-brand transition-colors"
+      >
+        Collections
+        <span
+          aria-hidden
+          className={`text-[10px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          ▼
+        </span>
+      </button>
+
+      {open && (
+        <div className="absolute left-1/2 top-full z-50 w-[min(92vw,720px)] -translate-x-1/2 pt-4">
+          <div className="overflow-hidden rounded-2xl border border-border bg-background shadow-2xl ring-1 ring-brand/20 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center justify-between border-b border-border bg-brand/10 px-5 py-3">
+              <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-brand">Shop by collection</p>
+              <Link to="/collections" onClick={() => setOpen(false)} className="text-xs font-semibold hover:text-brand">
+                View all →
+              </Link>
+            </div>
+            <div className="grid gap-1 p-3 sm:grid-cols-2">
+              {collections.map((c) => {
+                const cover = collectionCover(c.slug);
+                const count = collectionCount(c.slug);
+                return (
+                  <Link
+                    key={c.slug}
+                    to="/collections/$slug"
+                    params={{ slug: c.slug }}
+                    onClick={() => setOpen(false)}
+                    className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-muted"
+                  >
+                    <span className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-muted">
+                      {cover ? (
+                        <img src={cover} alt="" loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-110" />
+                      ) : null}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-bold uppercase tracking-wide group-hover:text-brand">
+                        {c.name}
+                      </span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {count > 0 ? `${count} drops` : "Coming soon"}
+                      </span>
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HeaderActionsInner() {
   const { count } = useCart();
   return (
     <div className="flex items-center gap-4 text-sm">
