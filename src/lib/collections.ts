@@ -15,7 +15,31 @@ const BASKETBALL = ["basketball", "nba", "lakers", "celtics", "warriors", "knick
 const BASEBALL = ["baseball", "mlb", "yankees", "dodgers", "rays", "red sox", "white sox", "cubs", "braves", "astros", "mets"];
 const FOOTBALL = ["ncaa", "nfl", "college", "university", "football", "crimson", "bulldogs", "longhorns", "buckeyes", "wolverines", "gators", "aggies", "sooners", "badgers", "gamecocks", "ucf", "wildcats", "cougars", "panthers"];
 
+// Pro football — all 32 franchises (mascots + city/market names)
+const NFL_TEAMS = [
+  "bills", "buffalo", "dolphins", "miami", "patriots", "new england", "jets",
+  "ravens", "baltimore", "bengals", "cincinnati", "cincinatti", "browns", "cleveland", "steelers", "pittsburgh",
+  "texans", "houston", "colts", "indianapolis", "indy", "jaguars", "jacksonville", "titans", "tennessee",
+  "broncos", "denver", "chiefs", "kansas city", "kansas", "raiders", "las vegas", "chargers",
+  "cowboys", "dallas", "giants", "new york", "eagles", "philadelphia", "philly", "commanders", "washington",
+  "bears", "chicago", "lions", "detroit", "packers", "green bay", "vikings", "minnesota",
+  "falcons", "atlanta", "panthers", "carolina", "saints", "new orleans", "buccaneers", "tampa",
+  "cardinals", "arizona", "rams", "los angeles", "49ers", "niners", "san francisco", "seahawks", "seattle",
+];
+
 export const collections: Collection[] = [
+  {
+    slug: "nfl-football",
+    name: "NFL Football",
+    tagline: "All 32 franchises. Sunday fits, every city.",
+    match: (p) => {
+      const t = text(p);
+      if (t.includes("nfl")) return true;
+      // don't pull college or other-sport gear into the pro football drop
+      if (has(t, ["ncaa", "university", "college", "baseball", "basketball", "soccer", "mlb", "nba"])) return false;
+      return has(t, NFL_TEAMS);
+    },
+  },
   {
     slug: "college-football",
     name: "College Football",
