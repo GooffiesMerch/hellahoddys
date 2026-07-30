@@ -1,13 +1,21 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { getCollection, productsIn } from "@/lib/collections";
 import { priceRange, type Product } from "@/lib/products";
-import type { Collection } from "@/lib/collections";
 
 export const Route = createFileRoute("/collections/$slug")({
   loader: ({ params }) => {
     const collection = getCollection(params.slug);
     if (!collection) throw notFound();
-    return { collection, items: productsIn(params.slug) };
+    // Only serializable fields — Collection carries a `match` function that
+    // cannot cross the SSR boundary.
+    return {
+      collection: {
+        slug: collection.slug,
+        name: collection.name,
+        tagline: collection.tagline,
+      },
+      items: productsIn(params.slug),
+    };
   },
   head: ({ loaderData }) => {
     if (!loaderData) return { meta: [{ title: "Collection — Hella Hoodys" }] };
@@ -34,7 +42,7 @@ export const Route = createFileRoute("/collections/$slug")({
 
 function CollectionPage() {
   const { collection, items } = Route.useLoaderData() as {
-    collection: Collection;
+    collection: { slug: string; name: string; tagline: string };
     items: Product[];
   };
   return (
