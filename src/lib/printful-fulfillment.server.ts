@@ -206,7 +206,7 @@ export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
       currency: "USD",
       locale: "en_US",
     }),
-  });
+  }, storeId);
 
   const rates = (res?.data ?? []).map((r) => ({
     id: r.id ?? r.shipping ?? "STANDARD",
@@ -225,7 +225,7 @@ export async function placeOrder(
   items: OrderLine[],
   shippingMethod: string,
 ) {
-  const { printfulItems, unmatched } = await buildPrintfulItems(items);
+  const { printfulItems, unmatched, storeId } = await buildPrintfulItems(items);
   if (printfulItems.length === 0) {
     throw new Error(
       "None of these items are linked to a Printful product yet. Run a catalog sync first.",
@@ -284,7 +284,7 @@ export async function placeOrder(
         retail_price: i.retail_price,
       })),
     }),
-  });
+  }, storeId);
 
   const result = created?.data ?? ({} as { id: number; status: string; costs?: Record<string, string> });
 
