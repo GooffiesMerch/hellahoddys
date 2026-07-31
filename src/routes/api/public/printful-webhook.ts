@@ -1,26 +1,109 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { timingSafeEqual } from "crypto";
+import { z } from "zod";
+
+const MAX_EVENT_AGE_SECONDS = 15 * 60;
+
+const payloadSchema = z.object({
+  type: z.string().min(1).max(100).optional(),
+  created: z.number().int().positive().optional(),
+  retries: z.number().int().nonnegative().optional(),
+  store: z.number().int().positive().optional(),
+  data: z
+    .object({
+      order: z.object({ id: z.number().int().positive() }).passthrough().optional(),
+    })
+    .passthrough()
+    .optional(),
+});
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+/** Constant-time string compare that never leaks length via early return. */
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) {
+    // Compare against itself so the work done is independent of the guess.
+    timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return timingSafeEqual(bufA, bufB);
+}
 
 export const Route = createFileRoute("/api/public/printful-webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const body = (await request.json().catch(() => null)) as {
-          type?: string;
-          data?: { order?: { id?: number } };
-        } | null;
+        // 1. Authenticate the caller with the shared token. Printful can't send
+        // custom headers, so the token travels in the webhook URL query string.
+        const expected = process.env["PRINTFUL_WEBHOOK_TOKEN"];
+        if (!expected) {
+          console.error("PRINTFUL_WEBHOOK_TOKEN is not configured");
+          return json({ ok: false }, 503);
+        }
+        const url = new URL(request.url);
+        const presented =
+          url.searchParams.get("token") ?? request.headers.get("x-printful-token") ?? "";
+        if (!safeEqual(presented, expected)) {
+          return json({ ok: false, error: "Unauthorized" }, 401);
+        }
 
-        const orderId = body?.data?.order?.id;
+        // 2. Validate the payload shape.
+        const parsed = payloadSchema.safeParse(await request.json().catch(() => null));
+        if (!parsed.success) {
+          return json({ ok: false, error: "Invalid payload" }, 400);
+        }
+        const body = parsed.data;
+
+        const orderId = body.data?.order?.id;
         if (!orderId) {
-          return new Response(JSON.stringify({ ok: false, error: "No order id" }), {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          });
+          return json({ ok: false, error: "No order id" }, 400);
+        }
+
+        // 3. Reject stale events (replayed captures of old deliveries).
+        if (body.created) {
+          const ageSeconds = Math.floor(Date.now() / 1000) - body.created;
+          if (Math.abs(ageSeconds) > MAX_EVENT_AGE_SECONDS) {
+            return json({ ok: false, error: "Event too old" }, 400);
+          }
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { printful } = await import("@/lib/printful.server");
 
-        // Re-fetch from Printful so we only ever trust data from the API itself.
+        // 4. Reject exact replays. Printful has no event id, so the delivery is
+        // keyed by type + order + emit timestamp + retry counter; the unique
+        // index makes the insert the atomic dedupe check.
+        const eventId = [
+          body.type ?? "unknown",
+          orderId,
+          body.created ?? "no-ts",
+          body.retries ?? 0,
+        ].join(":");
+
+        const { error: dedupeError } = await supabaseAdmin
+          .from("printful_webhook_events")
+          .insert({
+            event_id: eventId,
+            event_type: body.type ?? null,
+            printful_order_id: orderId,
+          });
+
+        if (dedupeError) {
+          if (dedupeError.code === "23505") {
+            return json({ ok: true, duplicate: true });
+          }
+          console.error("Webhook dedupe insert failed", dedupeError);
+          return json({ ok: false }, 500);
+        }
+
+        // 5. Re-fetch from Printful so we only ever trust data from the API itself.
         let verified: {
           id: number;
           status?: string;
@@ -30,10 +113,7 @@ export const Route = createFileRoute("/api/public/printful-webhook")({
           verified = await printful(`/orders/${orderId}`);
         } catch (err) {
           console.error("Printful webhook verification failed", err);
-          return new Response(JSON.stringify({ ok: false }), {
-            status: 202,
-            headers: { "Content-Type": "application/json" },
-          });
+          return json({ ok: false }, 202);
         }
 
         const shipment = verified.shipments?.[verified.shipments.length - 1];

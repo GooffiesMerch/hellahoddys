@@ -157,6 +157,30 @@ export type Database = {
           },
         ]
       }
+      printful_webhook_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_type: string | null
+          id: string
+          printful_order_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_type?: string | null
+          id?: string
+          printful_order_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_type?: string | null
+          id?: string
+          printful_order_id?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
