@@ -21,7 +21,6 @@ import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as AdminPrintfulRouteImport } from './routes/admin.printful'
 import { Route as ApiPublicPrintfulWebhookRouteImport } from './routes/api/public/printful-webhook'
-import { Route as ApiPublicPrintfulDebugRouteImport } from './routes/api/public/printful-debug'
 
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
@@ -84,11 +83,6 @@ const ApiPublicPrintfulWebhookRoute =
     path: '/api/public/printful-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicPrintfulDebugRoute = ApiPublicPrintfulDebugRouteImport.update({
-  id: '/api/public/printful-debug',
-  path: '/api/public/printful-debug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -102,7 +96,6 @@ export interface FileRoutesByFullPath {
   '/orders/$id': typeof OrdersIdRoute
   '/products/$handle': typeof ProductsHandleRoute
   '/collections/': typeof CollectionsIndexRoute
-  '/api/public/printful-debug': typeof ApiPublicPrintfulDebugRoute
   '/api/public/printful-webhook': typeof ApiPublicPrintfulWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -116,7 +109,6 @@ export interface FileRoutesByTo {
   '/orders/$id': typeof OrdersIdRoute
   '/products/$handle': typeof ProductsHandleRoute
   '/collections': typeof CollectionsIndexRoute
-  '/api/public/printful-debug': typeof ApiPublicPrintfulDebugRoute
   '/api/public/printful-webhook': typeof ApiPublicPrintfulWebhookRoute
 }
 export interface FileRoutesById {
@@ -132,7 +124,6 @@ export interface FileRoutesById {
   '/orders/$id': typeof OrdersIdRoute
   '/products/$handle': typeof ProductsHandleRoute
   '/collections/': typeof CollectionsIndexRoute
-  '/api/public/printful-debug': typeof ApiPublicPrintfulDebugRoute
   '/api/public/printful-webhook': typeof ApiPublicPrintfulWebhookRoute
 }
 export interface FileRouteTypes {
@@ -149,7 +140,6 @@ export interface FileRouteTypes {
     | '/orders/$id'
     | '/products/$handle'
     | '/collections/'
-    | '/api/public/printful-debug'
     | '/api/public/printful-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -163,7 +153,6 @@ export interface FileRouteTypes {
     | '/orders/$id'
     | '/products/$handle'
     | '/collections'
-    | '/api/public/printful-debug'
     | '/api/public/printful-webhook'
   id:
     | '__root__'
@@ -178,7 +167,6 @@ export interface FileRouteTypes {
     | '/orders/$id'
     | '/products/$handle'
     | '/collections/'
-    | '/api/public/printful-debug'
     | '/api/public/printful-webhook'
   fileRoutesById: FileRoutesById
 }
@@ -192,7 +180,6 @@ export interface RootRouteChildren {
   AdminPrintfulRoute: typeof AdminPrintfulRoute
   OrdersIdRoute: typeof OrdersIdRoute
   ProductsHandleRoute: typeof ProductsHandleRoute
-  ApiPublicPrintfulDebugRoute: typeof ApiPublicPrintfulDebugRoute
   ApiPublicPrintfulWebhookRoute: typeof ApiPublicPrintfulWebhookRoute
 }
 
@@ -282,13 +269,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPrintfulWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/printful-debug': {
-      id: '/api/public/printful-debug'
-      path: '/api/public/printful-debug'
-      fullPath: '/api/public/printful-debug'
-      preLoaderRoute: typeof ApiPublicPrintfulDebugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -316,7 +296,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPrintfulRoute: AdminPrintfulRoute,
   OrdersIdRoute: OrdersIdRoute,
   ProductsHandleRoute: ProductsHandleRoute,
-  ApiPublicPrintfulDebugRoute: ApiPublicPrintfulDebugRoute,
   ApiPublicPrintfulWebhookRoute: ApiPublicPrintfulWebhookRoute,
 }
 export const routeTree = rootRouteImport
