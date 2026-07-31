@@ -39,82 +39,156 @@ export interface OrderLine {
   quantity: number;
 }
 
-/** Pull every sync product + variant from EVERY connected Printful store. */
-export async function syncCatalog() {
+export interface PrintfulStoreRef {
+  id: number;
+  name: string;
+}
+
+interface SyncProductSummary {
+  id: number;
+  external_id?: string;
+  name: string;
+  thumbnail_url?: string;
+}
+
+/** Cache one Printful sync product (and all of its variants) locally. */
+async function cacheProduct(store: PrintfulStoreRef, p: SyncProductSummary): Promise<number> {
+  const detail = await printful<{ data: PrintfulSyncVariant[] }>(
+    `/v2/sync-products/${p.id}/sync-variants?limit=100`,
+    {},
+    store.id,
+  );
+  const syncVariants = detail?.data ?? [];
+  const now = new Date().toISOString();
+
+  await supabaseAdmin.from("printful_products").upsert({
+    id: p.id,
+    external_id: p.external_id ?? null,
+    name: p.name,
+    thumbnail_url: p.thumbnail_url ?? null,
+    variant_count: syncVariants.length,
+    store_id: store.id,
+    store_name: store.name,
+    synced_at: now,
+  });
+
+  const rows = syncVariants.map((v) => {
+    const parsed = parseVariantName(v.name);
+    return {
+      id: v.id,
+      product_id: p.id,
+      store_id: store.id,
+      external_id: v.external_id ?? null,
+      sku: v.sku ?? null,
+      name: v.name,
+      size: v.size ?? parsed.size ?? null,
+      color: v.color ?? parsed.color ?? null,
+      retail_price: v.retail_price ? Number(v.retail_price) : null,
+      currency: v.currency ?? "USD",
+      thumbnail_url: null,
+      availability: v.availability_status ?? null,
+      synced_at: now,
+    };
+  });
+
+  if (rows.length > 0) {
+    await supabaseAdmin.from("printful_variants").upsert(rows);
+  }
+  return rows.length;
+}
+
+/** Drop products (and their variants) that no longer exist in Printful. */
+async function removeProducts(ids: number[]) {
+  if (ids.length === 0) return;
+  await supabaseAdmin.from("printful_variants").delete().in("product_id", ids);
+  await supabaseAdmin.from("printful_products").delete().in("id", ids);
+}
+
+/**
+ * Incremental catalog refresh across every connected Printful store.
+ * Only products that are new or whose variant count changed are re-fetched,
+ * so this is cheap enough to run automatically on storefront requests.
+ */
+export async function syncCatalog(options: { full?: boolean } = {}) {
   const stores = await listStores();
   const limit = 100;
   let products = 0;
   let variants = 0;
   const perStore: Array<{ id: number; name: string; products: number }> = [];
 
+  const { data: cachedRows } = await supabaseAdmin
+    .from("printful_products")
+    .select("id, variant_count");
+  const cached = new Map<number, number>(
+    (cachedRows ?? []).map((r) => [Number(r.id), Number(r.variant_count ?? 0)]),
+  );
+  const seen = new Set<number>();
+
   for (const store of stores) {
     let offset = 0;
     let storeProducts = 0;
-  for (;;) {
-    const page = await printful<{
-      data: Array<{ id: number; external_id?: string; name: string; thumbnail_url?: string }>;
-    }>(`/v2/sync-products?offset=${offset}&limit=${limit}`, {}, store.id);
-    const list = page?.data ?? [];
-    if (list.length === 0) break;
 
-    for (const p of list) {
-      try {
-      const detail = await printful<{ data: PrintfulSyncVariant[] }>(
-        `/v2/sync-products/${p.id}/sync-variants?limit=100`,
+    for (;;) {
+      const page = await printful<{ data: SyncProductSummary[] }>(
+        `/v2/sync-products?offset=${offset}&limit=${limit}`,
         {},
         store.id,
       );
-      const syncVariants = detail?.data ?? [];
+      const list = page?.data ?? [];
+      if (list.length === 0) break;
 
-      await supabaseAdmin.from("printful_products").upsert({
-        id: p.id,
-        external_id: p.external_id ?? null,
-        name: p.name,
-        thumbnail_url: p.thumbnail_url ?? null,
-        variant_count: syncVariants.length,
-        store_id: store.id,
-        store_name: store.name,
-        synced_at: new Date().toISOString(),
-      });
-      products += 1;
-      storeProducts += 1;
+      for (const p of list) {
+        seen.add(Number(p.id));
+        storeProducts += 1;
+        const isKnown = cached.has(Number(p.id));
+        if (isKnown && !options.full) continue;
 
-      const rows = syncVariants.map((v) => {
-        const parsed = parseVariantName(v.name);
-        return {
-          id: v.id,
-          product_id: p.id,
-          store_id: store.id,
-          external_id: v.external_id ?? null,
-          sku: v.sku ?? null,
-          name: v.name,
-          size: v.size ?? parsed.size ?? null,
-          color: v.color ?? parsed.color ?? null,
-          retail_price: v.retail_price ? Number(v.retail_price) : null,
-          currency: v.currency ?? "USD",
-          thumbnail_url: null,
-          availability: v.availability_status ?? null,
-          synced_at: new Date().toISOString(),
-        };
-      });
-
-      if (rows.length > 0) {
-        await supabaseAdmin.from("printful_variants").upsert(rows);
-        variants += rows.length;
+        try {
+          variants += await cacheProduct(store, p);
+          products += 1;
+        } catch (err) {
+          // Keep syncing the rest of the catalog if one product call fails.
+          console.error(`Printful sync failed for product ${p.id}`, err);
+        }
       }
-      } catch (err) {
-        // Keep syncing the rest of the catalog if one product call fails.
-        console.error(`Printful sync failed for product ${p.id}`, err);
-      }
+
+      if (list.length < limit) break;
+      offset += limit;
     }
 
-    if (list.length < limit) break;
-    offset += limit;
-  }
     perStore.push({ id: store.id, name: store.name, products: storeProducts });
   }
 
-  return { products, variants, stores: perStore };
+  const removed = [...cached.keys()].filter((id) => !seen.has(id));
+  await removeProducts(removed);
+
+  return { products, variants, removed: removed.length, stores: perStore };
+}
+
+/** Refresh (or delete) a single Printful product, used by product webhooks. */
+export async function syncSingleProduct(storeId: number, productId: number) {
+  const stores = await listStores();
+  const store = stores.find((s) => s.id === Number(storeId)) ?? {
+    id: Number(storeId),
+    name: "Printful",
+  };
+
+  try {
+    const res = await printful<{ data: { sync_product?: SyncProductSummary } & SyncProductSummary }>(
+      `/v2/sync-products/${productId}`,
+      {},
+      store.id,
+    );
+    const p = (res?.data as { sync_product?: SyncProductSummary })?.sync_product ??
+      (res?.data as SyncProductSummary);
+    if (!p?.id) throw new Error("Product not found");
+    await cacheProduct(store, p);
+    return { updated: true };
+  } catch (err) {
+    console.error(`Printful product ${productId} refresh failed; removing from cache`, err);
+    await removeProducts([Number(productId)]);
+    return { updated: false, removed: true };
+  }
 }
 
 /** Resolve a cart line to a Printful sync variant (+ its store) via the cache. */
