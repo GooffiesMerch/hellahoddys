@@ -22,10 +22,10 @@ const itemSchema = z.object({
   quantity: z.number().int().min(1).max(50),
 });
 
-/** Pulls the Printful store catalog into the local cache. */
+/** Full re-pull of every Printful store (troubleshooting only — sync is automatic). */
 export const syncPrintfulCatalog = createServerFn({ method: "POST" }).handler(async () => {
   const { syncCatalog } = await import("./printful-fulfillment.server");
-  return syncCatalog();
+  return syncCatalog({ full: true });
 });
 
 /** Live shipping options for a cart + destination. */
