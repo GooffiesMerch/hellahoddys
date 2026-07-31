@@ -25,20 +25,24 @@ export async function loadPrintfulCatalog(): Promise<Product[]> {
 
   if (!prods || prods.length === 0) return [];
 
-  const byProduct = new Map<number, typeof vars extends null ? never : NonNullable<typeof vars>>();
-  for (const v of vars ?? []) {
-    const list = byProduct.get(Number(v.product_id)) ?? ([] as never[]);
-    (list as unknown[]).push(v);
-    byProduct.set(Number(v.product_id), list as never);
+  type VariantRow = {
+    product_id: number;
+    sku: string | null;
+    size: string | null;
+    color: string | null;
+    retail_price: number | null;
+  };
+
+  const byProduct = new Map<number, VariantRow[]>();
+  for (const v of (vars ?? []) as VariantRow[]) {
+    const key = Number(v.product_id);
+    const list = byProduct.get(key) ?? [];
+    list.push(v);
+    byProduct.set(key, list);
   }
 
   return prods.map((p) => {
-    const rows = (byProduct.get(Number(p.id)) ?? []) as Array<{
-      sku: string | null;
-      size: string | null;
-      color: string | null;
-      retail_price: number | null;
-    }>;
+    const rows = byProduct.get(Number(p.id)) ?? [];
 
     const variants: Variant[] = rows.map((v) => ({
       sku: v.sku ?? "",
