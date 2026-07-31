@@ -12,10 +12,18 @@ const payloadSchema = z.object({
   data: z
     .object({
       order: z.object({ id: z.number().int().positive() }).passthrough().optional(),
+      sync_product: z.object({ id: z.number().int().positive() }).passthrough().optional(),
     })
     .passthrough()
     .optional(),
 });
+
+const PRODUCT_EVENTS = new Set([
+  "product_synced",
+  "product_updated",
+  "product_deleted",
+  "catalog_stock_updated",
+]);
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -61,17 +69,36 @@ export const Route = createFileRoute("/api/public/printful-webhook")({
         }
         const body = parsed.data;
 
-        const orderId = body.data?.order?.id;
-        if (!orderId) {
-          return json({ ok: false, error: "No order id" }, 400);
-        }
-
         // 3. Reject stale events (replayed captures of old deliveries).
         if (body.created) {
           const ageSeconds = Math.floor(Date.now() / 1000) - body.created;
           if (Math.abs(ageSeconds) > MAX_EVENT_AGE_SECONDS) {
             return json({ ok: false, error: "Event too old" }, 400);
           }
+        }
+
+        // Product events keep the storefront catalog in sync automatically:
+        // publishing in Printful puts the product on the site with no manual step.
+        if (PRODUCT_EVENTS.has(body.type ?? "")) {
+          const productId = body.data?.sync_product?.id;
+          const storeId = body.store;
+          if (!productId || !storeId) {
+            return json({ ok: false, error: "No product id" }, 400);
+          }
+          const { syncSingleProduct } = await import("@/lib/printful-fulfillment.server");
+          if (body.type === "product_deleted") {
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            await supabaseAdmin.from("printful_variants").delete().eq("product_id", productId);
+            await supabaseAdmin.from("printful_products").delete().eq("id", productId);
+          } else {
+            await syncSingleProduct(storeId, productId);
+          }
+          return json({ ok: true, product: productId });
+        }
+
+        const orderId = body.data?.order?.id;
+        if (!orderId) {
+          return json({ ok: false, error: "No order id" }, 400);
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
