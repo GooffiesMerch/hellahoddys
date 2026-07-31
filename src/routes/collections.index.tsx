@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { collections, collectionCount, collectionCover, productsIn } from "@/lib/collections";
-import { products, priceRange } from "@/lib/products";
+import { priceRange } from "@/lib/products";
+import { useCatalog } from "@/lib/catalog";
 
 export const Route = createFileRoute("/collections/")({
   head: () => ({
@@ -15,10 +16,11 @@ export const Route = createFileRoute("/collections/")({
 });
 
 function CollectionsIndex() {
-  const total = collections.reduce((n, c) => n + collectionCount(c.slug), 0);
+  const products = useCatalog();
+  const total = collections.reduce((n, c) => n + collectionCount(c.slug, products), 0);
   const [featured, ...rest] = collections;
-  const featuredCover = collectionCover(featured.slug);
-  const featuredThumbs = productsIn(featured.slug).slice(1, 4).map((p) => p.images[0]);
+  const featuredCover = collectionCover(featured.slug, products);
+  const featuredThumbs = productsIn(featured.slug, products).slice(1, 4).map((p) => p.images[0]);
   return (
     <div>
       {/* Hero */}
@@ -102,8 +104,8 @@ function CollectionsIndex() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {rest.map((c) => {
             const cover = collectionCover(c.slug);
-            const count = collectionCount(c.slug);
-            const thumbs = productsIn(c.slug).slice(1, 4).map((p) => p.images[0]);
+            const count = collectionCount(c.slug, products);
+            const thumbs = productsIn(c.slug, products).slice(1, 4).map((p) => p.images[0]);
             return (
               <Link
                 key={c.slug}
