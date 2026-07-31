@@ -1,0 +1,257 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import { useCart } from "@/lib/cart";
+import { formatPrice } from "@/lib/products";
+import { createPrintfulOrder, getShippingRates } from "@/lib/printful.functions";
+
+export const Route = createFileRoute("/checkout")({
+  head: () => ({
+    meta: [
+      { title: "Checkout — Hella Hoodys" },
+      { name: "description", content: "Enter your shipping details and place your Hella Hoodys order." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: CheckoutPage,
+});
+
+interface Rate {
+  id: string;
+  name: string;
+  rate: string;
+  currency: string;
+  minDeliveryDays?: number;
+  maxDeliveryDays?: number;
+}
+
+const emptyForm = {
+  name: "",
+  email: "",
+  address1: "",
+  address2: "",
+  city: "",
+  state_code: "",
+  country_code: "US",
+  zip: "",
+  phone: "",
+};
+
+function CheckoutPage() {
+  const { items, subtotal, clear } = useCart();
+  const navigate = useNavigate();
+  const fetchRates = useServerFn(getShippingRates);
+  const placeOrder = useServerFn(createPrintfulOrder);
+
+  const [form, setForm] = useState(emptyForm);
+  const [rates, setRates] = useState<Rate[]>([]);
+  const [shippingMethod, setShippingMethod] = useState<string>("");
+  const [loadingRates, setLoadingRates] = useState(false);
+  const [placing, setPlacing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const lines = items.map((i) => ({
+    handle: i.handle,
+    title: i.title,
+    sku: i.variantSku ?? "",
+    variantLabel: i.variantLabel ?? "",
+    price: i.price,
+    quantity: i.quantity,
+  }));
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const canQuote =
+    form.address1 && form.city && form.zip && form.country_code && items.length > 0;
+
+  async function onQuote() {
+    setError(null);
+    setLoadingRates(true);
+    try {
+      const res = await fetchRates({
+        data: { recipient: { ...form, name: form.name || "Customer", email: form.email || "hello@example.com" }, items: lines },
+      });
+      setRates(res.rates ?? []);
+      setShippingMethod(res.rates?.[0]?.id ?? "");
+      if (!res.rates || res.rates.length === 0) {
+        setError("No shipping options came back for that address. Double-check it and try again.");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load shipping rates.");
+    } finally {
+      setLoadingRates(false);
+    }
+  }
+
+  async function onPlace(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setPlacing(true);
+    try {
+      const res = await placeOrder({
+        data: { recipient: form, items: lines, shippingMethod: shippingMethod || "STANDARD" },
+      });
+      clear();
+      navigate({ to: "/orders/$id", params: { id: res.orderId } });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not place your order.");
+    } finally {
+      setPlacing(false);
+    }
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="mx-auto max-w-[900px] px-6 lg:px-10 py-24 text-center">
+        <h1 className="text-4xl font-black tracking-tight">Nothing to check out</h1>
+        <p className="mt-3 text-muted-foreground">Add a hoody to your bag first.</p>
+      </div>
+    );
+  }
+
+  const selected = rates.find((r) => r.id === shippingMethod);
+  const shippingCost = selected ? Number(selected.rate) : 0;
+
+  return (
+    <div className="mx-auto max-w-[1200px] px-6 lg:px-10 py-12">
+      <h1 className="text-4xl font-black tracking-tight">Checkout</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Every piece is printed and shipped on demand by our fulfillment partner.
+      </p>
+
+      <form onSubmit={onPlace} className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px]">
+        <div className="space-y-6">
+          <section className="rounded-md border border-border p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">Shipping details</h2>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <Field label="Full name" value={form.name} onChange={set("name")} required />
+              <Field label="Email" type="email" value={form.email} onChange={set("email")} required />
+              <Field label="Address" value={form.address1} onChange={set("address1")} required className="sm:col-span-2" />
+              <Field label="Apt, suite (optional)" value={form.address2} onChange={set("address2")} className="sm:col-span-2" />
+              <Field label="City" value={form.city} onChange={set("city")} required />
+              <Field label="State / region code" value={form.state_code} onChange={set("state_code")} placeholder="CA" />
+              <Field label="ZIP / postal code" value={form.zip} onChange={set("zip")} required />
+              <Field label="Country code" value={form.country_code} onChange={set("country_code")} placeholder="US" required />
+              <Field label="Phone (optional)" value={form.phone} onChange={set("phone")} className="sm:col-span-2" />
+            </div>
+          </section>
+
+          <section className="rounded-md border border-border p-6">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">Shipping method</h2>
+              <button
+                type="button"
+                onClick={onQuote}
+                disabled={!canQuote || loadingRates}
+                className="rounded-md border border-border px-4 py-2 text-xs font-semibold hover:bg-accent disabled:opacity-50"
+              >
+                {loadingRates ? "Getting rates…" : "Get live rates"}
+              </button>
+            </div>
+
+            {rates.length === 0 ? (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Fill in your address, then get live rates from our fulfillment partner.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-2">
+                {rates.map((r) => (
+                  <li key={r.id}>
+                    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-md border border-border px-4 py-3 text-sm hover:bg-accent">
+                      <span className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name="shipping"
+                          value={r.id}
+                          checked={shippingMethod === r.id}
+                          onChange={() => setShippingMethod(r.id)}
+                        />
+                        <span>
+                          <span className="font-semibold">{r.name}</span>
+                          {r.minDeliveryDays != null && (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              {r.minDeliveryDays}–{r.maxDeliveryDays} business days
+                            </span>
+                          )}
+                        </span>
+                      </span>
+                      <span className="font-semibold">{formatPrice(Number(r.rate))}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+
+        <aside className="h-fit rounded-md border border-border p-6">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">Order summary</h2>
+          <ul className="mt-4 space-y-3 text-sm">
+            {items.map((i) => (
+              <li key={`${i.handle}-${i.variantSku ?? ""}`} className="flex justify-between gap-3">
+                <span className="text-muted-foreground">
+                  {i.title}
+                  {i.variantLabel ? ` — ${i.variantLabel}` : ""} × {i.quantity}
+                </span>
+                <span className="font-semibold">{formatPrice(i.price * i.quantity)}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
+            <Row label="Subtotal" value={formatPrice(subtotal)} />
+            <Row
+              label="Shipping"
+              value={selected ? formatPrice(shippingCost) : "Get rates"}
+            />
+          </div>
+          <div className="mt-4 flex justify-between border-t border-border pt-4 text-base font-bold">
+            <span>Total</span>
+            <span>{formatPrice(subtotal + shippingCost)}</span>
+          </div>
+
+          {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={placing}
+            className="mt-6 w-full rounded-md bg-brand py-3 text-sm font-semibold text-brand-foreground hover:opacity-90 disabled:opacity-60"
+          >
+            {placing ? "Placing order…" : "Place order"}
+          </button>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Online payment isn't switched on yet — your order is submitted to our fulfillment
+            partner as a draft and we'll follow up by email to collect payment.
+          </p>
+        </aside>
+      </form>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-semibold">{value}</span>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  className = "",
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  return (
+    <label className={`block text-sm ${className}`}>
+      <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </span>
+      <input
+        {...props}
+        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+      />
+    </label>
+  );
+}

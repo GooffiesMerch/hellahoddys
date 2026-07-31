@@ -11,12 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as CollectionsRouteImport } from './routes/collections'
+import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as ProductsHandleRouteImport } from './routes/products.$handle'
+import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
+import { Route as AdminPrintfulRouteImport } from './routes/admin.printful'
+import { Route as ApiPublicPrintfulWebhookRouteImport } from './routes/api/public/printful-webhook'
 
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
@@ -26,6 +30,11 @@ const ShopRoute = ShopRouteImport.update({
 const CollectionsRoute = CollectionsRouteImport.update({
   id: '/collections',
   path: '/collections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -53,41 +62,69 @@ const ProductsHandleRoute = ProductsHandleRouteImport.update({
   path: '/products/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrdersIdRoute = OrdersIdRouteImport.update({
+  id: '/orders/$id',
+  path: '/orders/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => CollectionsRoute,
 } as any)
+const AdminPrintfulRoute = AdminPrintfulRouteImport.update({
+  id: '/admin/printful',
+  path: '/admin/printful',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPrintfulWebhookRoute =
+  ApiPublicPrintfulWebhookRouteImport.update({
+    id: '/api/public/printful-webhook',
+    path: '/api/public/printful-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRouteWithChildren
   '/shop': typeof ShopRoute
+  '/admin/printful': typeof AdminPrintfulRoute
   '/collections/$slug': typeof CollectionsSlugRoute
+  '/orders/$id': typeof OrdersIdRoute
   '/products/$handle': typeof ProductsHandleRoute
   '/collections/': typeof CollectionsIndexRoute
+  '/api/public/printful-webhook': typeof ApiPublicPrintfulWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
   '/shop': typeof ShopRoute
+  '/admin/printful': typeof AdminPrintfulRoute
   '/collections/$slug': typeof CollectionsSlugRoute
+  '/orders/$id': typeof OrdersIdRoute
   '/products/$handle': typeof ProductsHandleRoute
   '/collections': typeof CollectionsIndexRoute
+  '/api/public/printful-webhook': typeof ApiPublicPrintfulWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRouteWithChildren
   '/shop': typeof ShopRoute
+  '/admin/printful': typeof AdminPrintfulRoute
   '/collections/$slug': typeof CollectionsSlugRoute
+  '/orders/$id': typeof OrdersIdRoute
   '/products/$handle': typeof ProductsHandleRoute
   '/collections/': typeof CollectionsIndexRoute
+  '/api/public/printful-webhook': typeof ApiPublicPrintfulWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -95,39 +132,55 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/cart'
+    | '/checkout'
     | '/collections'
     | '/shop'
+    | '/admin/printful'
     | '/collections/$slug'
+    | '/orders/$id'
     | '/products/$handle'
     | '/collections/'
+    | '/api/public/printful-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/cart'
+    | '/checkout'
     | '/shop'
+    | '/admin/printful'
     | '/collections/$slug'
+    | '/orders/$id'
     | '/products/$handle'
     | '/collections'
+    | '/api/public/printful-webhook'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/cart'
+    | '/checkout'
     | '/collections'
     | '/shop'
+    | '/admin/printful'
     | '/collections/$slug'
+    | '/orders/$id'
     | '/products/$handle'
     | '/collections/'
+    | '/api/public/printful-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   CartRoute: typeof CartRoute
+  CheckoutRoute: typeof CheckoutRoute
   CollectionsRoute: typeof CollectionsRouteWithChildren
   ShopRoute: typeof ShopRoute
+  AdminPrintfulRoute: typeof AdminPrintfulRoute
+  OrdersIdRoute: typeof OrdersIdRoute
   ProductsHandleRoute: typeof ProductsHandleRoute
+  ApiPublicPrintfulWebhookRoute: typeof ApiPublicPrintfulWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -144,6 +197,13 @@ declare module '@tanstack/react-router' {
       path: '/collections'
       fullPath: '/collections'
       preLoaderRoute: typeof CollectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -181,12 +241,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/orders/$id': {
+      id: '/orders/$id'
+      path: '/orders/$id'
+      fullPath: '/orders/$id'
+      preLoaderRoute: typeof OrdersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/collections/$slug': {
       id: '/collections/$slug'
       path: '/$slug'
       fullPath: '/collections/$slug'
       preLoaderRoute: typeof CollectionsSlugRouteImport
       parentRoute: typeof CollectionsRoute
+    }
+    '/admin/printful': {
+      id: '/admin/printful'
+      path: '/admin/printful'
+      fullPath: '/admin/printful'
+      preLoaderRoute: typeof AdminPrintfulRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/printful-webhook': {
+      id: '/api/public/printful-webhook'
+      path: '/api/public/printful-webhook'
+      fullPath: '/api/public/printful-webhook'
+      preLoaderRoute: typeof ApiPublicPrintfulWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -209,20 +290,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   CartRoute: CartRoute,
+  CheckoutRoute: CheckoutRoute,
   CollectionsRoute: CollectionsRouteWithChildren,
   ShopRoute: ShopRoute,
+  AdminPrintfulRoute: AdminPrintfulRoute,
+  OrdersIdRoute: OrdersIdRoute,
   ProductsHandleRoute: ProductsHandleRoute,
+  ApiPublicPrintfulWebhookRoute: ApiPublicPrintfulWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

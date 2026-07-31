@@ -14,7 +14,149 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          carrier: string | null
+          created_at: string
+          currency: string
+          email: string
+          id: string
+          items: Json
+          printful_order_id: number | null
+          printful_payload: Json | null
+          recipient: Json
+          shipping_cost: number
+          shipping_method: string | null
+          status: string
+          subtotal: number
+          tax: number
+          total: number
+          tracking_number: string | null
+          tracking_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string
+          currency?: string
+          email: string
+          id?: string
+          items: Json
+          printful_order_id?: number | null
+          printful_payload?: Json | null
+          recipient: Json
+          shipping_cost?: number
+          shipping_method?: string | null
+          status?: string
+          subtotal?: number
+          tax?: number
+          total?: number
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string
+          currency?: string
+          email?: string
+          id?: string
+          items?: Json
+          printful_order_id?: number | null
+          printful_payload?: Json | null
+          recipient?: Json
+          shipping_cost?: number
+          shipping_method?: string | null
+          status?: string
+          subtotal?: number
+          tax?: number
+          total?: number
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      printful_products: {
+        Row: {
+          external_id: string | null
+          id: number
+          name: string
+          synced_at: string
+          thumbnail_url: string | null
+          variant_count: number
+        }
+        Insert: {
+          external_id?: string | null
+          id: number
+          name: string
+          synced_at?: string
+          thumbnail_url?: string | null
+          variant_count?: number
+        }
+        Update: {
+          external_id?: string | null
+          id?: number
+          name?: string
+          synced_at?: string
+          thumbnail_url?: string | null
+          variant_count?: number
+        }
+        Relationships: []
+      }
+      printful_variants: {
+        Row: {
+          availability: string | null
+          color: string | null
+          currency: string | null
+          external_id: string | null
+          id: number
+          name: string
+          product_id: number
+          retail_price: number | null
+          size: string | null
+          sku: string | null
+          synced_at: string
+          thumbnail_url: string | null
+        }
+        Insert: {
+          availability?: string | null
+          color?: string | null
+          currency?: string | null
+          external_id?: string | null
+          id: number
+          name: string
+          product_id: number
+          retail_price?: number | null
+          size?: string | null
+          sku?: string | null
+          synced_at?: string
+          thumbnail_url?: string | null
+        }
+        Update: {
+          availability?: string | null
+          color?: string | null
+          currency?: string | null
+          external_id?: string | null
+          id?: number
+          name?: string
+          product_id?: number
+          retail_price?: number | null
+          size?: string | null
+          sku?: string | null
+          synced_at?: string
+          thumbnail_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "printful_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "printful_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
