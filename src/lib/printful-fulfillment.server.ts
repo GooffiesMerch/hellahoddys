@@ -1,6 +1,18 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { printful, parseVariantName, type PrintfulSyncVariant } from "./printful.server";
 
+export interface ShippingRate {
+  id?: string;
+  shipping?: string;
+  name?: string;
+  rate?: string | number;
+  currency?: string;
+  minDeliveryDays?: number;
+  maxDeliveryDays?: number;
+  min_delivery_days?: number;
+  max_delivery_days?: number;
+}
+
 export interface Recipient {
   name: string;
   email: string;
@@ -30,29 +42,29 @@ export async function syncCatalog() {
   let variants = 0;
 
   for (;;) {
-    const page = await printful<Array<{ id: number }>>(
-      `/store/products?offset=${offset}&limit=${limit}`,
-    );
-    if (!Array.isArray(page) || page.length === 0) break;
+    const page = await printful<{
+      data: Array<{ id: number; external_id?: string; name: string; thumbnail_url?: string }>;
+    }>(`/v2/sync-products?offset=${offset}&limit=${limit}`);
+    const list = page?.data ?? [];
+    if (list.length === 0) break;
 
-    for (const summary of page) {
-      const detail = await printful<{
-        sync_product: { id: number; external_id?: string; name: string; thumbnail_url?: string };
-        sync_variants: PrintfulSyncVariant[];
-      }>(`/store/products/${summary.id}`);
+    for (const p of list) {
+      const detail = await printful<{ data: PrintfulSyncVariant[] }>(
+        `/v2/sync-products/${p.id}/sync-variants?limit=100`,
+      );
+      const syncVariants = detail?.data ?? [];
 
-      const p = detail.sync_product;
       await supabaseAdmin.from("printful_products").upsert({
         id: p.id,
         external_id: p.external_id ?? null,
         name: p.name,
         thumbnail_url: p.thumbnail_url ?? null,
-        variant_count: detail.sync_variants?.length ?? 0,
+        variant_count: syncVariants.length,
         synced_at: new Date().toISOString(),
       });
       products += 1;
 
-      const rows = (detail.sync_variants ?? []).map((v) => {
+      const rows = syncVariants.map((v) => {
         const parsed = parseVariantName(v.name);
         return {
           id: v.id,
@@ -64,7 +76,7 @@ export async function syncCatalog() {
           color: v.color ?? parsed.color ?? null,
           retail_price: v.retail_price ? Number(v.retail_price) : null,
           currency: v.currency ?? "USD",
-          thumbnail_url: v.files?.find((f) => f.type === "preview")?.preview_url ?? null,
+          thumbnail_url: null,
           availability: v.availability_status ?? null,
           synced_at: new Date().toISOString(),
         };
@@ -76,7 +88,7 @@ export async function syncCatalog() {
       }
     }
 
-    if (page.length < limit) break;
+    if (list.length < limit) break;
     offset += limit;
   }
 
@@ -138,12 +150,10 @@ async function buildPrintfulItems(items: OrderLine[]) {
 export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
   const { printfulItems, unmatched } = await buildPrintfulItems(items);
   if (printfulItems.length === 0) {
-    return { rates: [], unmatched };
+    return { rates: [] as ShippingRate[], unmatched };
   }
 
-  const rates = await printful<
-    Array<{ id: string; name: string; rate: string; currency: string; minDeliveryDays?: number; maxDeliveryDays?: number }>
-  >("/shipping/rates", {
+  const res = await printful<{ data: ShippingRate[] }>("/v2/shipping-rates", {
     method: "POST",
     body: JSON.stringify({
       recipient: {
@@ -153,8 +163,8 @@ export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
         state_code: recipient.state_code || undefined,
         zip: recipient.zip,
       },
-      items: printfulItems.map((i) => ({
-        variant_id: undefined,
+      order_items: printfulItems.map((i) => ({
+        source: "sync_product",
         sync_variant_id: i.sync_variant_id,
         quantity: i.quantity,
       })),
@@ -162,6 +172,15 @@ export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
       locale: "en_US",
     }),
   });
+
+  const rates = (res?.data ?? []).map((r) => ({
+    id: r.id ?? r.shipping ?? "STANDARD",
+    name: r.name ?? "Standard",
+    rate: String(r.rate ?? "0"),
+    currency: r.currency ?? "USD",
+    minDeliveryDays: r.minDeliveryDays ?? r.min_delivery_days,
+    maxDeliveryDays: r.maxDeliveryDays ?? r.max_delivery_days,
+  }));
 
   return { rates, unmatched };
 }
@@ -201,11 +220,13 @@ export async function placeOrder(
 
   // confirm=false => the order is created as a draft in Printful and is only
   // charged/fulfilled once it is confirmed (payments are not wired up yet).
-  const result = await printful<{
-    id: number;
-    status: string;
-    costs?: { shipping?: string; tax?: string; total?: string; currency?: string };
-  }>("/orders?confirm=false", {
+  const created = await printful<{
+    data: {
+      id: number;
+      status: string;
+      costs?: { shipping?: string; tax?: string; total?: string; currency?: string };
+    };
+  }>("/v2/orders", {
     method: "POST",
     body: JSON.stringify({
       external_id: order.id,
@@ -221,9 +242,16 @@ export async function placeOrder(
         zip: recipient.zip,
         phone: recipient.phone || undefined,
       },
-      items: printfulItems,
+      order_items: printfulItems.map((i) => ({
+        source: "sync_product",
+        sync_variant_id: i.sync_variant_id,
+        quantity: i.quantity,
+        retail_price: i.retail_price,
+      })),
     }),
   });
+
+  const result = created?.data ?? ({} as { id: number; status: string; costs?: Record<string, string> });
 
   const shippingCost = Number(result.costs?.shipping ?? 0);
   const tax = Number(result.costs?.tax ?? 0);
