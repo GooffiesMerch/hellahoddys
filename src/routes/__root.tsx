@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import logoAsset from "@/assets/hella-hoodys-logo.jpg.asset.json";
 import { CartProvider, useCart } from "@/lib/cart";
+import { CatalogProvider } from "@/lib/catalog";
 import { collections, collectionCount, collectionCover } from "@/lib/collections";
 
 function NotFoundComponent() {
@@ -121,13 +122,15 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <div className="min-h-screen flex flex-col bg-background text-foreground">
-          <SiteHeader />
-          <main className="flex-1">
-            <Outlet />
-          </main>
-          <SiteFooter />
-        </div>
+        <CatalogProvider>
+          <div className="min-h-screen flex flex-col bg-background text-foreground">
+            <SiteHeader />
+            <main className="flex-1">
+              <Outlet />
+            </main>
+            <SiteFooter />
+          </div>
+        </CatalogProvider>
       </CartProvider>
     </QueryClientProvider>
   );
