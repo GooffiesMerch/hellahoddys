@@ -1,5 +1,10 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { printful, parseVariantName, type PrintfulSyncVariant } from "./printful.server";
+import {
+  printful,
+  parseVariantName,
+  listStores,
+  type PrintfulSyncVariant,
+} from "./printful.server";
 
 export interface ShippingRate {
   id?: string;
@@ -34,17 +39,21 @@ export interface OrderLine {
   quantity: number;
 }
 
-/** Pull every sync product + variant from the Printful store into the cache. */
+/** Pull every sync product + variant from EVERY connected Printful store. */
 export async function syncCatalog() {
-  let offset = 0;
+  const stores = await listStores();
   const limit = 100;
   let products = 0;
   let variants = 0;
+  const perStore: Array<{ id: number; name: string; products: number }> = [];
 
+  for (const store of stores) {
+    let offset = 0;
+    let storeProducts = 0;
   for (;;) {
     const page = await printful<{
       data: Array<{ id: number; external_id?: string; name: string; thumbnail_url?: string }>;
-    }>(`/v2/sync-products?offset=${offset}&limit=${limit}`);
+    }>(`/v2/sync-products?offset=${offset}&limit=${limit}`, {}, store.id);
     const list = page?.data ?? [];
     if (list.length === 0) break;
 
@@ -52,6 +61,8 @@ export async function syncCatalog() {
       try {
       const detail = await printful<{ data: PrintfulSyncVariant[] }>(
         `/v2/sync-products/${p.id}/sync-variants?limit=100`,
+        {},
+        store.id,
       );
       const syncVariants = detail?.data ?? [];
 
@@ -61,15 +72,19 @@ export async function syncCatalog() {
         name: p.name,
         thumbnail_url: p.thumbnail_url ?? null,
         variant_count: syncVariants.length,
+        store_id: store.id,
+        store_name: store.name,
         synced_at: new Date().toISOString(),
       });
       products += 1;
+      storeProducts += 1;
 
       const rows = syncVariants.map((v) => {
         const parsed = parseVariantName(v.name);
         return {
           id: v.id,
           product_id: p.id,
+          store_id: store.id,
           external_id: v.external_id ?? null,
           sku: v.sku ?? null,
           name: v.name,
@@ -96,26 +111,30 @@ export async function syncCatalog() {
     if (list.length < limit) break;
     offset += limit;
   }
+    perStore.push({ id: store.id, name: store.name, products: storeProducts });
+  }
 
-  return { products, variants };
+  return { products, variants, stores: perStore };
 }
 
-/** Resolve a cart line to a Printful sync variant id using the cached catalog. */
-async function resolveVariantId(line: OrderLine): Promise<number | null> {
+/** Resolve a cart line to a Printful sync variant (+ its store) via the cache. */
+async function resolveVariantId(
+  line: OrderLine,
+): Promise<{ id: number; storeId: number | null } | null> {
   if (line.sku) {
     const { data } = await supabaseAdmin
       .from("printful_variants")
-      .select("id")
+      .select("id, store_id")
       .or(`sku.eq.${line.sku},external_id.eq.${line.sku}`)
       .limit(1)
       .maybeSingle();
-    if (data?.id) return Number(data.id);
+    if (data?.id) return { id: Number(data.id), storeId: data.store_id ?? null };
   }
 
   // Fall back to matching the product name + variant label (e.g. "Black / L").
   const { data } = await supabaseAdmin
     .from("printful_variants")
-    .select("id, name")
+    .select("id, name, store_id")
     .ilike("name", `%${line.title.replace(/%/g, "")}%`)
     .limit(50);
 
@@ -129,14 +148,14 @@ async function resolveVariantId(line: OrderLine): Promise<number | null> {
         .filter(Boolean)
         .every((token) => v.name.toLowerCase().includes(token)),
     ) ?? data[0];
-  return match ? Number(match.id) : null;
+  return match ? { id: Number(match.id), storeId: match.store_id ?? null } : null;
 }
 
 async function buildPrintfulItems(items: OrderLine[]) {
   const resolved = await Promise.all(
     items.map(async (line) => {
-      const syncVariantId = await resolveVariantId(line);
-      return { line, syncVariantId };
+      const hit = await resolveVariantId(line);
+      return { line, syncVariantId: hit?.id ?? null, storeId: hit?.storeId ?? null };
     }),
   );
 
@@ -149,11 +168,12 @@ async function buildPrintfulItems(items: OrderLine[]) {
       retail_price: r.line.price.toFixed(2),
     }));
 
-  return { printfulItems, unmatched };
+  const storeId = resolved.find((r) => r.syncVariantId != null)?.storeId ?? null;
+  return { printfulItems, unmatched, storeId };
 }
 
 export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
-  const { printfulItems, unmatched } = await buildPrintfulItems(items);
+  const { printfulItems, unmatched, storeId } = await buildPrintfulItems(items);
   if (printfulItems.length === 0) {
     return {
       rates: [] as Array<{
@@ -186,7 +206,7 @@ export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
       currency: "USD",
       locale: "en_US",
     }),
-  });
+  }, storeId);
 
   const rates = (res?.data ?? []).map((r) => ({
     id: r.id ?? r.shipping ?? "STANDARD",
@@ -205,7 +225,7 @@ export async function placeOrder(
   items: OrderLine[],
   shippingMethod: string,
 ) {
-  const { printfulItems, unmatched } = await buildPrintfulItems(items);
+  const { printfulItems, unmatched, storeId } = await buildPrintfulItems(items);
   if (printfulItems.length === 0) {
     throw new Error(
       "None of these items are linked to a Printful product yet. Run a catalog sync first.",
@@ -264,7 +284,7 @@ export async function placeOrder(
         retail_price: i.retail_price,
       })),
     }),
-  });
+  }, storeId);
 
   const result = created?.data ?? ({} as { id: number; status: string; costs?: Record<string, string> });
 

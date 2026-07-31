@@ -24,7 +24,13 @@ function PrintfulAdmin() {
     setResult(null);
     try {
       const res = await sync({});
-      setResult(`Synced ${res.products} products and ${res.variants} variants from Printful.`);
+      const breakdown = (res.stores ?? [])
+        .map((s) => `${s.name}: ${s.products}`)
+        .join(" · ");
+      setResult(
+        `Synced ${res.products} products and ${res.variants} variants from Printful.` +
+          (breakdown ? ` (${breakdown})` : ""),
+      );
     } catch (e) {
       setResult(e instanceof Error ? e.message : "Sync failed.");
     } finally {
@@ -36,8 +42,9 @@ function PrintfulAdmin() {
     <div className="mx-auto max-w-[900px] px-6 lg:px-10 py-16">
       <h1 className="text-4xl font-black tracking-tight">Printful sync</h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        Pull your Printful store products and variants into the site so orders can be routed to
-        fulfillment automatically. Run this after adding or editing products in Printful.
+        Pulls products and variants from every Printful store connected to your account (HELLA
+        HOODYS, Hella's Store, Square store) so orders route to fulfillment automatically. Run this
+        after adding or editing products in Printful.
       </p>
       <button
         type="button"
