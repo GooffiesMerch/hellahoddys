@@ -1,5 +1,10 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { printful, parseVariantName, type PrintfulSyncVariant } from "./printful.server";
+import {
+  printful,
+  parseVariantName,
+  listStores,
+  type PrintfulSyncVariant,
+} from "./printful.server";
 
 export interface ShippingRate {
   id?: string;
@@ -34,17 +39,21 @@ export interface OrderLine {
   quantity: number;
 }
 
-/** Pull every sync product + variant from the Printful store into the cache. */
+/** Pull every sync product + variant from EVERY connected Printful store. */
 export async function syncCatalog() {
-  let offset = 0;
+  const stores = await listStores();
   const limit = 100;
   let products = 0;
   let variants = 0;
+  const perStore: Array<{ id: number; name: string; products: number }> = [];
 
+  for (const store of stores) {
+    let offset = 0;
+    let storeProducts = 0;
   for (;;) {
     const page = await printful<{
       data: Array<{ id: number; external_id?: string; name: string; thumbnail_url?: string }>;
-    }>(`/v2/sync-products?offset=${offset}&limit=${limit}`);
+    }>(`/v2/sync-products?offset=${offset}&limit=${limit}`, {}, store.id);
     const list = page?.data ?? [];
     if (list.length === 0) break;
 
@@ -52,6 +61,8 @@ export async function syncCatalog() {
       try {
       const detail = await printful<{ data: PrintfulSyncVariant[] }>(
         `/v2/sync-products/${p.id}/sync-variants?limit=100`,
+        {},
+        store.id,
       );
       const syncVariants = detail?.data ?? [];
 
@@ -61,15 +72,19 @@ export async function syncCatalog() {
         name: p.name,
         thumbnail_url: p.thumbnail_url ?? null,
         variant_count: syncVariants.length,
+        store_id: store.id,
+        store_name: store.name,
         synced_at: new Date().toISOString(),
       });
       products += 1;
+      storeProducts += 1;
 
       const rows = syncVariants.map((v) => {
         const parsed = parseVariantName(v.name);
         return {
           id: v.id,
           product_id: p.id,
+          store_id: store.id,
           external_id: v.external_id ?? null,
           sku: v.sku ?? null,
           name: v.name,
@@ -96,8 +111,10 @@ export async function syncCatalog() {
     if (list.length < limit) break;
     offset += limit;
   }
+    perStore.push({ id: store.id, name: store.name, products: storeProducts });
+  }
 
-  return { products, variants };
+  return { products, variants, stores: perStore };
 }
 
 /** Resolve a cart line to a Printful sync variant id using the cached catalog. */
