@@ -166,16 +166,16 @@ export function getCollection(slug: string): Collection | undefined {
   return collections.find((c) => c.slug === slug);
 }
 
-export function productsIn(slug: string): Product[] {
+export function productsIn(slug: string, catalog: Product[] = products): Product[] {
   const c = getCollection(slug);
   if (!c) return [];
-  return products.filter((p) => p.images.length > 0 && c.match(p));
+  return catalog.filter((p) => p.images.length > 0 && c.match(p));
 }
 
-export function collectionCover(slug: string): string | undefined {
-  return productsIn(slug)[0]?.images[0];
+export function collectionCover(slug: string, catalog: Product[] = products): string | undefined {
+  return productsIn(slug, catalog)[0]?.images[0];
 }
 
-export function collectionCount(slug: string): number {
-  return productsIn(slug).length;
+export function collectionCount(slug: string, catalog: Product[] = products): number {
+  return productsIn(slug, catalog).length;
 }

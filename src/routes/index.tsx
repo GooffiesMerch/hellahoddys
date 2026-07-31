@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { products, priceRange } from "@/lib/products";
+import { priceRange } from "@/lib/products";
+import { useCatalog } from "@/lib/catalog";
 import { collections, collectionCover, collectionCount } from "@/lib/collections";
 import { RankingsTicker } from "@/components/RankingsTicker";
 import heroWisconsin from "@/assets/hero-wisconsin.webp.asset.json";
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const products = useCatalog();
   const featured = products.filter((p) => p.images.length > 0).slice(0, 8);
   const withImages = products.filter((p) => p.images.length > 0);
   const heroImages = [

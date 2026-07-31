@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { getCollection, productsIn } from "@/lib/collections";
-import { priceRange, type Product } from "@/lib/products";
+import { priceRange } from "@/lib/products";
+import { useCatalog } from "@/lib/catalog";
 
 export const Route = createFileRoute("/collections/$slug")({
   loader: ({ params }) => {
@@ -41,10 +42,11 @@ export const Route = createFileRoute("/collections/$slug")({
 });
 
 function CollectionPage() {
-  const { collection, items } = Route.useLoaderData() as {
+  const { collection } = Route.useLoaderData() as {
     collection: { slug: string; name: string; tagline: string };
-    items: Product[];
   };
+  const catalog = useCatalog();
+  const items = productsIn(collection.slug, catalog);
   return (
     <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-12">
       <Link to="/collections" className="text-sm text-muted-foreground hover:underline">

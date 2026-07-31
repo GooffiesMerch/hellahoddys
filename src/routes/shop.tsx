@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { products, priceRange, type Product } from "@/lib/products";
+import { priceRange, type Product } from "@/lib/products";
+import { useCatalog } from "@/lib/catalog";
 import { collections, productsIn } from "@/lib/collections";
 
 export const Route = createFileRoute("/shop")({
@@ -40,11 +41,12 @@ function ProductCard({ p }: { p: Product }) {
 
 function Shop() {
   const [query, setQuery] = useState("");
+  const catalog = useCatalog();
 
   const grouped = useMemo(() => {
     const seen = new Set<string>();
     const groups = collections.map((c) => {
-      const items = productsIn(c.slug).filter((p) => {
+      const items = productsIn(c.slug, catalog).filter((p) => {
         if (seen.has(p.handle)) return false;
         seen.add(p.handle);
         return true;
@@ -52,9 +54,9 @@ function Shop() {
       return { collection: c, items };
     });
     // Anything not matched by a collection
-    const others = products.filter((p) => p.images.length > 0 && !seen.has(p.handle));
+    const others = catalog.filter((p) => p.images.length > 0 && !seen.has(p.handle));
     return { groups, others };
-  }, []);
+  }, [catalog]);
 
   const q = query.trim().toLowerCase();
   const totalCount =

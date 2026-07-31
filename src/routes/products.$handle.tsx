@@ -1,16 +1,17 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { getProduct, priceRange, type Product } from "@/lib/products";
+import { useProduct } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/products/$handle")({
   loader: ({ params }) => {
-    const product = getProduct(params.handle);
-    if (!product) throw notFound();
-    return { product };
+    // Printful-synced products are not in the local file, so a miss here is
+    // resolved client-side from the live catalog instead of 404-ing.
+    return { product: getProduct(params.handle) ?? null, handle: params.handle };
   },
   head: ({ loaderData }) => {
-    if (!loaderData) {
+    if (!loaderData?.product) {
       return { meta: [{ title: "Product not found — Hella Hoodys" }, { name: "robots", content: "noindex" }] };
     }
     const { product } = loaderData;
@@ -33,7 +34,24 @@ export const Route = createFileRoute("/products/$handle")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData() as { product: Product };
+  const loaded = Route.useLoaderData() as { product: Product | null; handle: string };
+  const fromCatalog = useProduct(loaded.handle);
+  const product = loaded.product ?? fromCatalog;
+  if (!product) {
+    return (
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-24 text-center">
+        <h1 className="text-3xl font-black tracking-tight">Product not found</h1>
+        <p className="mt-3 text-muted-foreground">This drop is no longer available.</p>
+        <Link to="/shop" className="mt-6 inline-block text-sm font-semibold text-primary hover:underline">
+          Back to shop →
+        </Link>
+      </div>
+    );
+  }
+  return <ProductView product={product} />;
+}
+
+function ProductView({ product }: { product: Product }) {
   const [activeImg, setActiveImg] = useState(0);
   const { addItem } = useCart();
   const [selected, setSelected] = useState<Record<string, string>>({});
