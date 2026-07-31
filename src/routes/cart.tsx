@@ -114,14 +114,12 @@ function CartPage() {
             <span>Total</span>
             <span>{formatPrice(subtotal)}</span>
           </div>
-          <button
-            type="button"
-            disabled
-            className="mt-6 w-full rounded-md bg-brand py-3 text-sm font-semibold text-brand-foreground opacity-60"
-            title="Checkout coming soon"
+          <Link
+            to="/checkout"
+            className="mt-6 block w-full rounded-md bg-brand py-3 text-center text-sm font-semibold text-brand-foreground hover:opacity-90"
           >
-            Checkout — coming soon
-          </button>
+            Checkout
+          </Link>
           <button
             type="button"
             onClick={clear}
