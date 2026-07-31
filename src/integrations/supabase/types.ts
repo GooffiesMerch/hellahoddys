@@ -82,6 +82,8 @@ export type Database = {
           external_id: string | null
           id: number
           name: string
+          store_id: number | null
+          store_name: string | null
           synced_at: string
           thumbnail_url: string | null
           variant_count: number
@@ -90,6 +92,8 @@ export type Database = {
           external_id?: string | null
           id: number
           name: string
+          store_id?: number | null
+          store_name?: string | null
           synced_at?: string
           thumbnail_url?: string | null
           variant_count?: number
@@ -98,6 +102,8 @@ export type Database = {
           external_id?: string | null
           id?: number
           name?: string
+          store_id?: number | null
+          store_name?: string | null
           synced_at?: string
           thumbnail_url?: string | null
           variant_count?: number
@@ -116,6 +122,7 @@ export type Database = {
           retail_price: number | null
           size: string | null
           sku: string | null
+          store_id: number | null
           synced_at: string
           thumbnail_url: string | null
         }
@@ -130,6 +137,7 @@ export type Database = {
           retail_price?: number | null
           size?: string | null
           sku?: string | null
+          store_id?: number | null
           synced_at?: string
           thumbnail_url?: string | null
         }
@@ -144,6 +152,7 @@ export type Database = {
           retail_price?: number | null
           size?: string | null
           sku?: string | null
+          store_id?: number | null
           synced_at?: string
           thumbnail_url?: string | null
         }
