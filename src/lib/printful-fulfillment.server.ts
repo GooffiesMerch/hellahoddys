@@ -150,7 +150,17 @@ async function buildPrintfulItems(items: OrderLine[]) {
 export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
   const { printfulItems, unmatched } = await buildPrintfulItems(items);
   if (printfulItems.length === 0) {
-    return { rates: [] as ShippingRate[], unmatched };
+    return {
+      rates: [] as Array<{
+        id: string;
+        name: string;
+        rate: string;
+        currency: string;
+        minDeliveryDays?: number;
+        maxDeliveryDays?: number;
+      }>,
+      unmatched,
+    };
   }
 
   const res = await printful<{ data: ShippingRate[] }>("/v2/shipping-rates", {
