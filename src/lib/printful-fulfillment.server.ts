@@ -49,6 +49,7 @@ export async function syncCatalog() {
     if (list.length === 0) break;
 
     for (const p of list) {
+      try {
       const detail = await printful<{ data: PrintfulSyncVariant[] }>(
         `/v2/sync-products/${p.id}/sync-variants?limit=100`,
       );
@@ -85,6 +86,10 @@ export async function syncCatalog() {
       if (rows.length > 0) {
         await supabaseAdmin.from("printful_variants").upsert(rows);
         variants += rows.length;
+      }
+      } catch (err) {
+        // Keep syncing the rest of the catalog if one product call fails.
+        console.error(`Printful sync failed for product ${p.id}`, err);
       }
     }
 
