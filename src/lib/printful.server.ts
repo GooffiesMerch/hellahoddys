@@ -20,6 +20,7 @@ export interface PrintfulSyncVariant {
 export async function printful<T = unknown>(
   path: string,
   init: RequestInit = {},
+  storeId?: number | null,
 ): Promise<T> {
   const token = process.env["PRINTFUL_API_KEY"];
   if (!token) throw new Error("Printful is not configured yet.");
@@ -29,6 +30,7 @@ export async function printful<T = unknown>(
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      ...(storeId ? { "X-PF-Store-Id": String(storeId) } : {}),
       ...(init.headers ?? {}),
     },
   });
@@ -41,6 +43,24 @@ export async function printful<T = unknown>(
 
   const json = text ? JSON.parse(text) : {};
   return (json.result ?? json) as T;
+}
+
+export interface PrintfulStore {
+  id: number;
+  name: string;
+}
+
+/** Every Printful store the API token can access. */
+export async function listStores(): Promise<PrintfulStore[]> {
+  try {
+    const res = await printful<{ data?: PrintfulStore[] } | PrintfulStore[]>("/v2/stores?limit=100");
+    const list = Array.isArray(res) ? res : (res?.data ?? []);
+    if (list.length > 0) return list.map((s) => ({ id: Number(s.id), name: s.name }));
+  } catch (err) {
+    console.error("Printful /v2/stores failed, falling back to v1", err);
+  }
+  const v1 = await printful<PrintfulStore[]>("/stores");
+  return (v1 ?? []).map((s) => ({ id: Number(s.id), name: s.name }));
 }
 
 /** Splits a Printful sync-variant name like "HELLA X Hoodie / Black / L". */
