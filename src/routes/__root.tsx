@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import logoAsset from "@/assets/hella-hoodys-logo.jpg.asset.json";
 import { CartProvider, useCart } from "@/lib/cart";
+import { ThemeProvider, themeInitScript, useTheme } from "@/lib/theme";
 import { collections, collectionCount, collectionCover } from "@/lib/collections";
 
 function NotFoundComponent() {
@@ -106,6 +107,7 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
         {children}
@@ -120,15 +122,17 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <div className="min-h-screen flex flex-col bg-background text-foreground">
-          <SiteHeader />
-          <main className="flex-1">
-            <Outlet />
-          </main>
-          <SiteFooter />
-        </div>
-      </CartProvider>
+      <ThemeProvider>
+        <CartProvider>
+          <div className="min-h-screen flex flex-col bg-background text-foreground">
+            <SiteHeader />
+            <main className="flex-1">
+              <Outlet />
+            </main>
+            <SiteFooter />
+          </div>
+        </CartProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
@@ -136,7 +140,7 @@ function RootComponent() {
 function SiteHeader() {
   return (
     <>
-      <div className="bg-foreground py-2 text-center text-xs font-medium uppercase tracking-[0.2em] text-background">
+      <div className="bg-footer py-2 text-center text-xs font-medium uppercase tracking-[0.2em] text-footer-foreground">
         Free shipping on orders over $75 · <span className="text-brand">It's always HOODY season</span>
       </div>
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
@@ -249,6 +253,7 @@ function HeaderActionsInner() {
   return (
     <div className="flex items-center gap-4 text-sm">
       <Link to="/shop" className="hidden sm:inline hover:text-brand transition-colors" aria-label="Search">Search</Link>
+      <ThemeToggle />
       <Link to="/cart" className="rounded-md bg-brand px-3 py-1.5 font-semibold text-brand-foreground hover:opacity-90 transition-opacity">
         Bag ({count})
       </Link>
@@ -256,53 +261,68 @@ function HeaderActionsInner() {
   );
 }
 
+function ThemeToggle() {
+  const { theme, toggle } = useTheme();
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      title={theme === "dark" ? "Light mode" : "Dark mode"}
+      className="flex h-8 w-8 items-center justify-center rounded-md border border-border text-base transition-colors hover:border-brand hover:text-brand"
+    >
+      <span aria-hidden>{theme === "dark" ? "☀" : "☾"}</span>
+    </button>
+  );
+}
+
 function SiteFooter() {
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-24 border-t border-border bg-foreground text-background">
+    <footer className="mt-24 border-t border-border bg-footer text-footer-foreground">
       <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-16">
         <div className="grid gap-12 md:grid-cols-4">
           <div className="md:col-span-1">
-            <img src={logoAsset.url} alt="Hella Hoodys" className="h-10 w-auto rounded-sm bg-background p-1.5" />
-            <p className="mt-4 max-w-xs text-sm text-background/70">
+            <img src={logoAsset.url} alt="Hella Hoodys" className="h-10 w-auto rounded-sm bg-white p-1.5" />
+            <p className="mt-4 max-w-xs text-sm text-footer-foreground/70">
               It's always HOODY season.
             </p>
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-background/60">Shop</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-footer-foreground/60">Shop</h4>
             <ul className="mt-4 space-y-2 text-sm">
-              <li><Link to="/shop" className="hover:text-background/70">All products</Link></li>
-              <li><Link to="/collections" className="hover:text-background/70">All collections</Link></li>
-              <li><Link to="/collections/$slug" params={{ slug: "college-football" }} className="hover:text-background/70">College Football</Link></li>
-              <li><Link to="/collections/$slug" params={{ slug: "soccer" }} className="hover:text-background/70">Soccer</Link></li>
+              <li><Link to="/shop" className="hover:text-brand">All products</Link></li>
+              <li><Link to="/collections" className="hover:text-brand">All collections</Link></li>
+              <li><Link to="/collections/$slug" params={{ slug: "college-football" }} className="hover:text-brand">College Football</Link></li>
+              <li><Link to="/collections/$slug" params={{ slug: "soccer" }} className="hover:text-brand">Soccer</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-background/60">Help</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-footer-foreground/60">Help</h4>
             <ul className="mt-4 space-y-2 text-sm">
-              <li><Link to="/about" className="hover:text-background/70">About us</Link></li>
-              <li><Link to="/about" className="hover:text-background/70">Shipping & returns</Link></li>
-              <li><Link to="/about" className="hover:text-background/70">Size guide</Link></li>
-              <li><Link to="/about" className="hover:text-background/70">Contact</Link></li>
+              <li><Link to="/about" className="hover:text-brand">About us</Link></li>
+              <li><Link to="/about" className="hover:text-brand">Shipping & returns</Link></li>
+              <li><Link to="/about" className="hover:text-brand">Size guide</Link></li>
+              <li><Link to="/about" className="hover:text-brand">Contact</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-background/60">Newsletter</h4>
-            <p className="mt-4 text-sm text-background/70">
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-footer-foreground/60">Newsletter</h4>
+            <p className="mt-4 text-sm text-footer-foreground/70">
               Drops, restocks, and 10% off your first order.
             </p>
             <form
               onSubmit={(e) => e.preventDefault()}
-              className="mt-4 flex overflow-hidden rounded-md border border-background/30"
+              className="mt-4 flex overflow-hidden rounded-md border border-footer-foreground/30"
             >
               <input
                 type="email"
                 required
                 placeholder="you@email.com"
-                className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-background/40 focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-footer-foreground/40 focus:outline-none"
               />
               <button
                 type="submit"
@@ -314,12 +334,12 @@ function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-background/20 pt-6 text-xs text-background/60 sm:flex-row sm:items-center">
+        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-footer-foreground/20 pt-6 text-xs text-footer-foreground/60 sm:flex-row sm:items-center">
           <p>© {year} Hella Hoodys. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-background">Privacy</a>
-            <a href="#" className="hover:text-background">Terms</a>
-            <a href="#" className="hover:text-background">Cookies</a>
+            <a href="#" className="hover:text-brand">Privacy</a>
+            <a href="#" className="hover:text-brand">Terms</a>
+            <a href="#" className="hover:text-brand">Cookies</a>
           </div>
         </div>
       </div>
