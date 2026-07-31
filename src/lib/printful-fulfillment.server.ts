@@ -117,22 +117,24 @@ export async function syncCatalog() {
   return { products, variants, stores: perStore };
 }
 
-/** Resolve a cart line to a Printful sync variant id using the cached catalog. */
-async function resolveVariantId(line: OrderLine): Promise<number | null> {
+/** Resolve a cart line to a Printful sync variant (+ its store) via the cache. */
+async function resolveVariantId(
+  line: OrderLine,
+): Promise<{ id: number; storeId: number | null } | null> {
   if (line.sku) {
     const { data } = await supabaseAdmin
       .from("printful_variants")
-      .select("id")
+      .select("id, store_id")
       .or(`sku.eq.${line.sku},external_id.eq.${line.sku}`)
       .limit(1)
       .maybeSingle();
-    if (data?.id) return Number(data.id);
+    if (data?.id) return { id: Number(data.id), storeId: data.store_id ?? null };
   }
 
   // Fall back to matching the product name + variant label (e.g. "Black / L").
   const { data } = await supabaseAdmin
     .from("printful_variants")
-    .select("id, name")
+    .select("id, name, store_id")
     .ilike("name", `%${line.title.replace(/%/g, "")}%`)
     .limit(50);
 
@@ -146,14 +148,14 @@ async function resolveVariantId(line: OrderLine): Promise<number | null> {
         .filter(Boolean)
         .every((token) => v.name.toLowerCase().includes(token)),
     ) ?? data[0];
-  return match ? Number(match.id) : null;
+  return match ? { id: Number(match.id), storeId: match.store_id ?? null } : null;
 }
 
 async function buildPrintfulItems(items: OrderLine[]) {
   const resolved = await Promise.all(
     items.map(async (line) => {
-      const syncVariantId = await resolveVariantId(line);
-      return { line, syncVariantId };
+      const hit = await resolveVariantId(line);
+      return { line, syncVariantId: hit?.id ?? null, storeId: hit?.storeId ?? null };
     }),
   );
 
@@ -166,11 +168,12 @@ async function buildPrintfulItems(items: OrderLine[]) {
       retail_price: r.line.price.toFixed(2),
     }));
 
-  return { printfulItems, unmatched };
+  const storeId = resolved.find((r) => r.syncVariantId != null)?.storeId ?? null;
+  return { printfulItems, unmatched, storeId };
 }
 
 export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
-  const { printfulItems, unmatched } = await buildPrintfulItems(items);
+  const { printfulItems, unmatched, storeId } = await buildPrintfulItems(items);
   if (printfulItems.length === 0) {
     return {
       rates: [] as Array<{
