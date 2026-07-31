@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import logoAsset from "@/assets/hella-hoodys-logo.jpg.asset.json";
 import { CartProvider, useCart } from "@/lib/cart";
-import { ThemeProvider, themeInitScript, useTheme } from "@/lib/theme";
 import { collections, collectionCount, collectionCover } from "@/lib/collections";
 
 function NotFoundComponent() {
@@ -107,7 +106,6 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
         {children}
@@ -122,17 +120,15 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <CartProvider>
-          <div className="min-h-screen flex flex-col bg-background text-foreground">
-            <SiteHeader />
-            <main className="flex-1">
-              <Outlet />
-            </main>
-            <SiteFooter />
-          </div>
-        </CartProvider>
-      </ThemeProvider>
+      <CartProvider>
+        <div className="min-h-screen flex flex-col bg-background text-foreground">
+          <SiteHeader />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+          <SiteFooter />
+        </div>
+      </CartProvider>
     </QueryClientProvider>
   );
 }
@@ -253,26 +249,10 @@ function HeaderActionsInner() {
   return (
     <div className="flex items-center gap-4 text-sm">
       <Link to="/shop" className="hidden sm:inline hover:text-brand transition-colors" aria-label="Search">Search</Link>
-      <ThemeToggle />
       <Link to="/cart" className="rounded-md bg-brand px-3 py-1.5 font-semibold text-brand-foreground hover:opacity-90 transition-opacity">
         Bag ({count})
       </Link>
     </div>
-  );
-}
-
-function ThemeToggle() {
-  const { theme, toggle } = useTheme();
-  return (
-    <button
-      type="button"
-      onClick={toggle}
-      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      title={theme === "dark" ? "Light mode" : "Dark mode"}
-      className="flex h-8 w-8 items-center justify-center rounded-md border border-border text-base transition-colors hover:border-brand hover:text-brand"
-    >
-      <span aria-hidden>{theme === "dark" ? "☀" : "☾"}</span>
-    </button>
   );
 }
 
