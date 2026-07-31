@@ -40,11 +40,12 @@ function PrintfulAdmin() {
 
   return (
     <div className="mx-auto max-w-[900px] px-6 lg:px-10 py-16">
-      <h1 className="text-4xl font-black tracking-tight">Printful sync</h1>
+      <h1 className="text-4xl font-black tracking-tight">Printful catalog</h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        Pulls products and variants from every Printful store connected to your account (HELLA
-        HOODYS, Hella's Store, Square store) so orders route to fulfillment automatically. Run this
-        after adding or editing products in Printful.
+        Syncing is automatic. Anything you publish in any connected Printful store (HELLA HOODYS,
+        Hella&apos;s Store, Square store) appears on the site on its own — instantly if the Printful
+        product webhook is set, otherwise within a few minutes. The button below is only a manual
+        full re-pull if something ever looks out of date.
       </p>
       <button
         type="button"
@@ -52,7 +53,7 @@ function PrintfulAdmin() {
         disabled={busy}
         className="mt-8 rounded-md bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground hover:opacity-90 disabled:opacity-60"
       >
-        {busy ? "Syncing…" : "Sync catalog now"}
+        {busy ? "Refreshing…" : "Force full refresh"}
       </button>
       {result && <p className="mt-6 rounded-md border border-border p-4 text-sm">{result}</p>}
     </div>
