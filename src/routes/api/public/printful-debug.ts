@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/public/printful-debug")({
       GET: async () => {
         try {
           const { printful } = await import("@/lib/printful.server");
-          const res = await printful("/store/products?limit=1");
+          const res = await printful("/stores");
           return new Response(JSON.stringify({ ok: true, res }).slice(0, 2000), {
             headers: { "Content-Type": "application/json" },
           });
