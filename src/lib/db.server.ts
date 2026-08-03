@@ -60,6 +60,16 @@ export interface OrderSummary {
   id: string;
   status: string;
   email: string;
+  items: Array<{ title: string; variantLabel?: string; quantity: number; price: number }> | null;
+  subtotal: number;
+  shipping_cost: number;
+  tax: number;
+  total: number;
+  currency: string;
+  tracking_number: string | null;
+  tracking_url: string | null;
+  carrier: string | null;
+  created_at: string;
 }
 
 export interface WebhookLogRow {
@@ -71,19 +81,6 @@ export interface WebhookLogRow {
   printful_order_id: number | null;
   payload: unknown;
   received_at: string;
-}
-
-interface OrderSummaryRest {
-  items: Array<{ title: string; variantLabel?: string; quantity: number; price: number }> | null;
-  subtotal: number;
-  shipping_cost: number;
-  tax: number;
-  total: number;
-  currency: string;
-  tracking_number: string | null;
-  tracking_url: string | null;
-  carrier: string | null;
-  created_at: string;
 }
 
 export const backend = {
