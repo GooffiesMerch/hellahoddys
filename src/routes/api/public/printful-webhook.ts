@@ -87,9 +87,8 @@ export const Route = createFileRoute("/api/public/printful-webhook")({
           }
           const { syncSingleProduct } = await import("@/lib/printful-fulfillment.server");
           if (body.type === "product_deleted") {
-            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            await supabaseAdmin.from("printful_variants").delete().eq("product_id", productId);
-            await supabaseAdmin.from("printful_products").delete().eq("id", productId);
+            const { removeProducts } = await import("@/lib/printful-fulfillment.server");
+            await removeProducts([productId]);
           } else {
             await syncSingleProduct(storeId, productId);
           }
@@ -101,7 +100,7 @@ export const Route = createFileRoute("/api/public/printful-webhook")({
           return json({ ok: false, error: "No order id" }, 400);
         }
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { backend } = await import("@/lib/db.server");
         const { printful } = await import("@/lib/printful.server");
 
         // 4. Reject exact replays. Printful has no event id, so the delivery is
@@ -114,19 +113,11 @@ export const Route = createFileRoute("/api/public/printful-webhook")({
           body.retries ?? 0,
         ].join(":");
 
-        const { error: dedupeError } = await supabaseAdmin
-          .from("printful_webhook_events")
-          .insert({
-            event_id: eventId,
-            event_type: body.type ?? null,
-            printful_order_id: orderId,
-          });
-
-        if (dedupeError) {
-          if (dedupeError.code === "23505") {
-            return json({ ok: true, duplicate: true });
-          }
-          console.error("Webhook dedupe insert failed", dedupeError);
+        try {
+          const isNew = await backend.recordWebhookEvent(eventId, body.type ?? null, orderId);
+          if (!isNew) return json({ ok: true, duplicate: true });
+        } catch (err) {
+          console.error("Webhook dedupe insert failed", err);
           return json({ ok: false }, 500);
         }
 
@@ -145,15 +136,13 @@ export const Route = createFileRoute("/api/public/printful-webhook")({
 
         const shipment = verified.shipments?.[verified.shipments.length - 1];
 
-        await supabaseAdmin
-          .from("orders")
-          .update({
-            status: verified.status ?? "updated",
-            tracking_number: shipment?.tracking_number ?? null,
-            tracking_url: shipment?.tracking_url ?? null,
-            carrier: shipment?.carrier ?? null,
-          })
-          .eq("printful_order_id", verified.id);
+        await backend.updateOrderTracking({
+          printfulOrderId: verified.id,
+          status: verified.status ?? "updated",
+          trackingNumber: shipment?.tracking_number ?? null,
+          trackingUrl: shipment?.tracking_url ?? null,
+          carrier: shipment?.carrier ?? null,
+        });
 
         return new Response(JSON.stringify({ ok: true }), {
           headers: { "Content-Type": "application/json" },
