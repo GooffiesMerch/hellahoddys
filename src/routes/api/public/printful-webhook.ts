@@ -97,7 +97,9 @@ export const Route = createFileRoute("/api/public/printful-webhook")({
 
         const orderId = body.data?.order?.id;
         if (!orderId) {
-          return json({ ok: false, error: "No order id" }, 400);
+          // Test pings and event types we don't act on: acknowledge with 200 so
+          // Printful doesn't mark the endpoint as failing and disable it.
+          return json({ ok: true, ignored: body.type ?? "unknown" });
         }
 
         const { backend } = await import("@/lib/db.server");
