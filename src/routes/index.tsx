@@ -4,10 +4,6 @@ import { priceRange } from "@/lib/products";
 import { useCatalog } from "@/lib/catalog";
 import { collections, collectionCover, collectionCount } from "@/lib/collections";
 import { RankingsTicker } from "@/components/RankingsTicker";
-import heroWisconsin from "@/assets/hero-wisconsin.webp.asset.json";
-import heroOkstate from "@/assets/hero-okstate.webp.asset.json";
-import heroUcf from "@/assets/hero-ucf.webp.asset.json";
-import heroCarolina from "@/assets/hero-carolina.webp.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -18,10 +14,10 @@ function Index() {
   const featured = products.filter((p) => p.images.length > 0).slice(0, 8);
   const withImages = products.filter((p) => p.images.length > 0);
   const heroImages = [
-    { src: heroWisconsin.url, alt: "Hella Wisconsin Badgers hoodie" },
-    { src: heroOkstate.url, alt: "Hella Oklahoma State hoodie" },
-    { src: heroUcf.url, alt: "Hella UCF Knights hoodie" },
-    { src: heroCarolina.url, alt: "Hella South Carolina Gamecocks hoodie" },
+    { src: "/images/hero-wisconsin.webp", alt: "Hella Wisconsin Badgers hoodie" },
+    { src: "/images/hero-okstate.webp", alt: "Hella Oklahoma State hoodie" },
+    { src: "/images/hero-ucf.webp", alt: "Hella UCF Knights hoodie" },
+    { src: "/images/hero-carolina.webp", alt: "Hella South Carolina Gamecocks hoodie" },
   ];
   return (
     <div>
