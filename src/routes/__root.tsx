@@ -13,7 +13,41 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider, useCart } from "@/lib/cart";
 import { CatalogProvider } from "@/lib/catalog";
-import { collections, collectionCount, collectionCover } from "@/lib/collections";
+import { collectionCount } from "@/lib/collections";
+
+type MenuItem = { label: string; slug?: string };
+const MENU_GROUPS: { title: string; items: MenuItem[] }[] = [
+  {
+    title: "Professional",
+    items: [
+      { label: "NFL", slug: "nfl-football" },
+      { label: "MLB", slug: "baseball" },
+      { label: "NBA", slug: "basketball" },
+      { label: "WNBA" },
+      { label: "MLS", slug: "soccer" },
+      { label: "NHL" },
+    ],
+  },
+  {
+    title: "Collegiate",
+    items: [
+      { label: "All Collegiate", slug: "college-football" },
+      { label: "SEC" },
+      { label: "Big Ten" },
+      { label: "Big 12" },
+      { label: "ACC" },
+      { label: "Pac-12" },
+    ],
+  },
+  {
+    title: "Amateur",
+    items: [
+      { label: "NIL" },
+      { label: "Athletes" },
+      { label: "High Schools" },
+    ],
+  },
+];
 
 function NotFoundComponent() {
   return (
