@@ -280,6 +280,7 @@ export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
         zip: recipient.zip,
       },
       order_items: printfulItems.map((i) => ({
+        source: "sync_product",
         sync_variant_id: i.sync_variant_id,
         quantity: i.quantity,
       })),
@@ -362,6 +363,7 @@ export async function placeOrder(
         phone: recipient.phone || undefined,
       },
       order_items: printfulItems.map((i) => ({
+        source: "sync_product",
         sync_variant_id: i.sync_variant_id,
         quantity: i.quantity,
         retail_price: i.retail_price,
