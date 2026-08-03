@@ -40,6 +40,35 @@ function ProductCard({ p }: { p: Product }) {
 }
 
 function Shop() {
+  return <ShopInner />;
+}
+
+function FeatureSection({ title, tagline, items }: { title: string; tagline: string; items: Product[] }) {
+  return (
+    <section className="rounded-2xl border border-border bg-muted/30 p-6">
+      <div className="flex items-end justify-between gap-4 border-b border-border pb-3">
+        <div>
+          <h2 className="text-2xl font-black tracking-tight">{title}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{tagline}</p>
+        </div>
+        <span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-brand">
+          {items.length > 0 ? `${items.length} drops` : "Coming soon"}
+        </span>
+      </div>
+      {items.length > 0 ? (
+        <div className="mt-6 grid grid-cols-2 gap-6">
+          {items.slice(0, 4).map((p) => <ProductCard key={p.handle} p={p} />)}
+        </div>
+      ) : (
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          Dropping soon — check back for {title}.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function ShopInner() {
   const [query, setQuery] = useState("");
   const catalog = useCatalog();
 
