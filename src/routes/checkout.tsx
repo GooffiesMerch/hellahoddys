@@ -95,6 +95,9 @@ function CheckoutPage() {
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  const setCountry = (e: React.ChangeEvent<HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, country_code: e.target.value }));
+
   const canQuote =
     form.address1 && form.city && form.zip && form.country_code && items.length > 0;
 
@@ -165,7 +168,23 @@ function CheckoutPage() {
               <Field label="City" value={form.city} onChange={set("city")} required />
               <Field label="State / region code" value={form.state_code} onChange={set("state_code")} placeholder="CA" />
               <Field label="ZIP / postal code" value={form.zip} onChange={set("zip")} required />
-              <Field label="Country code" value={form.country_code} onChange={set("country_code")} placeholder="US" required />
+              <label className="block text-sm">
+                <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Country
+                </span>
+                <select
+                  value={form.country_code}
+                  onChange={setCountry}
+                  required
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <Field label="Phone (optional)" value={form.phone} onChange={set("phone")} className="sm:col-span-2" />
             </div>
           </section>
