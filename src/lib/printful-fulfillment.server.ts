@@ -197,10 +197,13 @@ async function resolveVariantId(
   line: OrderLine,
 ): Promise<{ id: number; storeId: number | null } | null> {
   if (line.sku) {
+    // PostgREST `or()` takes a comma-separated filter list, so a SKU containing
+    // a comma or parenthesis would otherwise corrupt the query.
+    const safeSku = line.sku.replace(/[(),]/g, "");
     const { data } = await db
       .from("printful_variants")
       .select("id, store_id")
-      .or(`sku.eq.${line.sku},external_id.eq.${line.sku}`)
+      .or(`sku.eq.${safeSku},external_id.eq.${safeSku}`)
       .limit(1)
       .maybeSingle();
     if (data?.id) return { id: Number(data.id), storeId: data.store_id ?? null };
@@ -214,15 +217,18 @@ async function resolveVariantId(
     .limit(50);
 
   if (!data || data.length === 0) return null;
-  const label = (line.variantLabel ?? "").toLowerCase();
-  const match =
-    data.find((v) =>
-      label
-        .split("/")
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .every((token) => v.name.toLowerCase().includes(token)),
-    ) ?? data[0];
+  const tokens = (line.variantLabel ?? "")
+    .toLowerCase()
+    .split("/")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const match = data.find((v) =>
+    tokens.every((token) => v.name.toLowerCase().includes(token)),
+  );
+  // Only fall back to the first hit when the line has no variant to match on.
+  // Guessing a variant would silently ship the wrong size or colour; reporting
+  // the line as unmatched is the safe failure.
+  if (!match) return tokens.length > 0 ? null : { id: Number(data[0].id), storeId: data[0].store_id ?? null };
   return match ? { id: Number(match.id), storeId: match.store_id ?? null } : null;
 }
 
@@ -336,7 +342,9 @@ export async function placeOrder(
   }>("/v2/orders", {
     method: "POST",
     body: JSON.stringify({
-      external_id: orderId,
+      // Printful rejects external_id longer than 32 chars; a UUID is 36 with
+      // its dashes, so strip them to get a stable 32-char id.
+      external_id: orderId.replace(/-/g, ""),
       shipping: shippingMethod,
       recipient: {
         name: recipient.name,

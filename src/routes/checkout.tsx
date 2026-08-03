@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { useCart } from "@/lib/cart";
+import { cartItemKey, useCart } from "@/lib/cart";
 import { formatPrice } from "@/lib/products";
 import { createPrintfulOrder, getShippingRates } from "@/lib/printful.functions";
 
@@ -189,7 +189,7 @@ function CheckoutPage() {
           <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">Order summary</h2>
           <ul className="mt-4 space-y-3 text-sm">
             {items.map((i) => (
-              <li key={`${i.handle}-${i.variantSku ?? ""}`} className="flex justify-between gap-3">
+              <li key={cartItemKey(i)} className="flex justify-between gap-3">
                 <span className="text-muted-foreground">
                   {i.title}
                   {i.variantLabel ? ` — ${i.variantLabel}` : ""} × {i.quantity}
