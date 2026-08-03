@@ -60,6 +60,20 @@ export interface OrderSummary {
   id: string;
   status: string;
   email: string;
+}
+
+export interface WebhookLogRow {
+  id: string;
+  event_type: string | null;
+  status_code: number;
+  ok: boolean;
+  note: string | null;
+  printful_order_id: number | null;
+  payload: unknown;
+  received_at: string;
+}
+
+interface OrderSummaryRest {
   items: Array<{ title: string; variantLabel?: string; quantity: number; price: number }> | null;
   subtotal: number;
   shipping_cost: number;
