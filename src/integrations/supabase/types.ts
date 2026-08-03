@@ -205,6 +205,42 @@ export type Database = {
         }
         Relationships: []
       }
+      printful_webhook_logs: {
+        Row: {
+          created_at: string
+          event_type: string | null
+          id: string
+          note: string | null
+          ok: boolean
+          payload: Json | null
+          printful_order_id: number | null
+          received_at: string
+          status_code: number
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string | null
+          id?: string
+          note?: string | null
+          ok?: boolean
+          payload?: Json | null
+          printful_order_id?: number | null
+          received_at?: string
+          status_code: number
+        }
+        Update: {
+          created_at?: string
+          event_type?: string | null
+          id?: string
+          note?: string | null
+          ok?: boolean
+          payload?: Json | null
+          printful_order_id?: number | null
+          received_at?: string
+          status_code?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -222,6 +258,22 @@ export type Database = {
       backend_get_order: {
         Args: { p_id: string; p_secret: string }
         Returns: Json
+      }
+      backend_list_webhook_logs: {
+        Args: { p_limit?: number; p_secret: string }
+        Returns: Json
+      }
+      backend_log_webhook: {
+        Args: {
+          p_event_type: string
+          p_note: string
+          p_ok: boolean
+          p_payload: Json
+          p_printful_order_id: number
+          p_secret: string
+          p_status_code: number
+        }
+        Returns: undefined
       }
       backend_record_webhook_event: {
         Args: {

@@ -72,6 +72,17 @@ export interface OrderSummary {
   created_at: string;
 }
 
+export interface WebhookLogRow {
+  id: string;
+  event_type: string | null;
+  status_code: number;
+  ok: boolean;
+  note: string | null;
+  printful_order_id: number | null;
+  payload: unknown;
+  received_at: string;
+}
+
 export const backend = {
   upsertProducts: (rows: unknown[]) => rpc("backend_upsert_products", { p_rows: rows }),
   upsertVariants: (rows: unknown[]) => rpc("backend_upsert_variants", { p_rows: rows }),
@@ -95,6 +106,25 @@ export const backend = {
       p_carrier: args.carrier,
     }),
   getOrder: (id: string) => rpc("backend_get_order", { p_id: id }) as Promise<OrderSummary | null>,
+  /** Appends a row to the webhook activity log (best effort). */
+  logWebhook: (entry: {
+    eventType: string | null;
+    statusCode: number;
+    ok: boolean;
+    note: string | null;
+    printfulOrderId: number | null;
+    payload: unknown;
+  }) =>
+    rpc("backend_log_webhook", {
+      p_event_type: entry.eventType,
+      p_status_code: entry.statusCode,
+      p_ok: entry.ok,
+      p_note: entry.note,
+      p_printful_order_id: entry.printfulOrderId,
+      p_payload: entry.payload ?? null,
+    }),
+  listWebhookLogs: (limit = 100) =>
+    rpc("backend_list_webhook_logs", { p_limit: limit }) as Promise<WebhookLogRow[]>,
   /** Returns true when the event is new, false when it is a replay. */
   recordWebhookEvent: (eventId: string, type: string | null, orderId: number | null) =>
     rpc("backend_record_webhook_event", {
