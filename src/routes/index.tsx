@@ -123,17 +123,22 @@ function Index() {
               params={{ handle: p.handle }}
               className="group"
             >
-              <div className="aspect-square overflow-hidden rounded-md bg-muted">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-border bg-gradient-to-b from-muted to-brand/10 shadow-sm transition duration-300 group-hover:-translate-y-1 group-hover:border-brand/40 group-hover:shadow-xl">
                 <img
                   src={p.images[0]}
                   alt={p.title}
                   loading="lazy"
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  decoding="async"
+                  className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.07]"
                 />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/0 to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
+                <span className="pointer-events-none absolute bottom-3 left-3 right-3 translate-y-2 rounded-md bg-brand px-3 py-2 text-center text-[11px] font-bold uppercase tracking-widest text-brand-foreground opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                  View drop
+                </span>
               </div>
               <div className="mt-3">
-                <p className="line-clamp-2 text-sm font-medium">{p.title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{priceRange(p)}</p>
+                <p className="line-clamp-2 text-sm font-medium transition group-hover:text-brand">{p.title}</p>
+                <p className="mt-1 text-sm font-semibold text-muted-foreground">{priceRange(p)}</p>
               </div>
             </Link>
           ))}
