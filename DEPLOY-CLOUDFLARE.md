@@ -21,7 +21,7 @@ Settings → Secrets and variables → Actions → New repository secret:
 | `VITE_SUPABASE_URL` / `SUPABASE_URL` | backend URL (from the project `.env`) |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_PUBLISHABLE_KEY` | publishable key (from `.env`) |
 | `VITE_SUPABASE_PROJECT_ID` | project id (from `.env`) |
-| `SUPABASE_SERVICE_ROLE_KEY` | service role key — ask me / not in `.env` |
+| `BACKEND_DB_SECRET` | backend access secret (I generated it; ask me for the value) |
 | `PRINTFUL_API_KEY` | your Printful all-stores token |
 | `PRINTFUL_WEBHOOK_TOKEN` | the webhook token used by the webhook route |
 
