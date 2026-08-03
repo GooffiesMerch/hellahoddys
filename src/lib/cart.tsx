@@ -23,8 +23,12 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "hh_cart_v1";
 
-const keyOf = (i: Pick<CartItem, "handle" | "variantSku">) =>
-  `${i.handle}::${i.variantSku ?? ""}`;
+// The variant label has to be part of the identity: roughly a third of the
+// catalog's variants carry no SKU, so keying on handle+SKU alone collapsed
+// every size of those products into a single line (adding S, M and L produced
+// "S x 3" and shipped three smalls).
+const keyOf = (i: Pick<CartItem, "handle" | "variantSku" | "variantLabel">) =>
+  `${i.handle}::${i.variantSku ?? ""}::${i.variantLabel ?? ""}`;
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -33,8 +37,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setItems(JSON.parse(raw));
-    } catch {}
+      const parsed: unknown = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed)) {
+        setItems(
+          parsed.filter(
+            (p): p is CartItem =>
+              !!p &&
+              typeof p === "object" &&
+              typeof (p as CartItem).handle === "string" &&
+              typeof (p as CartItem).price === "number" &&
+              typeof (p as CartItem).quantity === "number",
+          ),
+        );
+      }
+    } catch {
+      // A corrupt or foreign value in localStorage should not break the store.
+    }
     setHydrated(true);
   }, []);
 
@@ -42,7 +60,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!hydrated) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch {}
+    } catch {
+      // Private-mode / quota failures are non-fatal; the cart stays in memory.
+    }
   }, [items, hydrated]);
 
   const addItem: CartContextValue["addItem"] = (item, qty = 1) => {
