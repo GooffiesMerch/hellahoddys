@@ -220,36 +220,42 @@ function CollectionsMenu() {
                 View all →
               </Link>
             </div>
-            <div className="grid gap-1 p-3 sm:grid-cols-2">
-              {collections.map((c) => {
-                const cover = collectionCover(c.slug);
-                const count = collectionCount(c.slug);
-                return (
-                  <Link
-                    key={c.slug}
-                    to="/collections/$slug"
-                    params={{ slug: c.slug }}
-                    onClick={() => setOpen(false)}
-                    className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-muted"
-                  >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-center text-[8px] font-bold uppercase leading-tight text-muted-foreground">
-                      {!c.comingSoon && count > 0 && cover ? (
-                        <img src={cover} alt="" loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-110" />
-                      ) : (
-                        <span>Coming Soon</span>
-                      )}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold uppercase tracking-wide group-hover:text-brand">
-                        {c.name}
-                      </span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {!c.comingSoon && count > 0 ? `${count} drops` : "Coming soon"}
-                      </span>
-                    </span>
-                  </Link>
-                );
-              })}
+            <div className="grid gap-x-4 gap-y-6 p-5 sm:grid-cols-3">
+              {MENU_GROUPS.map((group) => (
+                <div key={group.title}>
+                  <p className="mb-2 border-b border-border pb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-brand">
+                    {group.title}
+                  </p>
+                  <ul className="space-y-0.5">
+                    {group.items.map((item) => {
+                      const count = item.slug ? collectionCount(item.slug) : 0;
+                      const live = Boolean(item.slug) && count > 0;
+                      return (
+                        <li key={item.label}>
+                          {live && item.slug ? (
+                            <Link
+                              to="/collections/$slug"
+                              params={{ slug: item.slug }}
+                              onClick={() => setOpen(false)}
+                              className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:bg-muted hover:text-brand"
+                            >
+                              <span className="truncate">{item.label}</span>
+                              <span className="shrink-0 text-[10px] font-medium normal-case text-muted-foreground">
+                                {count}
+                              </span>
+                            </Link>
+                          ) : (
+                            <span className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm font-semibold uppercase tracking-wide text-muted-foreground/60">
+                              <span className="truncate">{item.label}</span>
+                              <span className="shrink-0 text-[9px] font-medium normal-case">Soon</span>
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
         </div>
