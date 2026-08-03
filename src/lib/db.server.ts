@@ -60,7 +60,7 @@ export interface OrderSummary {
   id: string;
   status: string;
   email: string;
-  items: unknown;
+  items: Array<{ title: string; variantLabel?: string; quantity: number; price: number }> | null;
   subtotal: number;
   shipping_cost: number;
   tax: number;
