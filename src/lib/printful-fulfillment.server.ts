@@ -394,6 +394,15 @@ export async function placeOrder(
   await backend.updateOrder(orderId, {
     printful_order_id: final.id,
     status: final.status ?? "draft",
+    // Paid orders already carry the amounts the customer was charged.
+    ...(opts.orderId
+      ? {}
+      : {
+          shipping_cost: shippingCost,
+          tax,
+          total,
+          currency: final.costs?.currency ?? "USD",
+        }),
     printful_payload: final,
   });
 
