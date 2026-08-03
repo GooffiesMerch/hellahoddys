@@ -40,6 +40,35 @@ function ProductCard({ p }: { p: Product }) {
 }
 
 function Shop() {
+  return <ShopInner />;
+}
+
+function FeatureSection({ title, tagline, items }: { title: string; tagline: string; items: Product[] }) {
+  return (
+    <section className="rounded-2xl border border-border bg-muted/30 p-6">
+      <div className="flex items-end justify-between gap-4 border-b border-border pb-3">
+        <div>
+          <h2 className="text-2xl font-black tracking-tight">{title}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{tagline}</p>
+        </div>
+        <span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-brand">
+          {items.length > 0 ? `${items.length} drops` : "Coming soon"}
+        </span>
+      </div>
+      {items.length > 0 ? (
+        <div className="mt-6 grid grid-cols-2 gap-6">
+          {items.slice(0, 4).map((p) => <ProductCard key={p.handle} p={p} />)}
+        </div>
+      ) : (
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          Dropping soon — check back for {title}.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function ShopInner() {
   const [query, setQuery] = useState("");
   const catalog = useCatalog();
 
@@ -71,6 +100,15 @@ function Shop() {
   const visibleOthers = filterItems(grouped.others);
   const anyVisible = visibleGroups.length > 0 || visibleOthers.length > 0;
 
+  const match = (words: string[]) =>
+    catalog.filter(
+      (p) =>
+        p.images.length > 0 &&
+        words.some((w) => (p.title + " " + p.tags + " " + p.type).toLowerCase().includes(w)),
+    );
+  const collabs = filterItems(match(["collab"]));
+  const blanks = filterItems(match(["blank"]));
+
   return (
     <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-12">
       <div className="mb-10 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -85,6 +123,19 @@ function Shop() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search products…"
           className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring sm:w-72"
+        />
+      </div>
+
+      <div className="mb-16 grid gap-6 md:grid-cols-2">
+        <FeatureSection
+          title="HellaCollabs"
+          tagline="Limited team-ups with artists, creators and campuses."
+          items={collabs}
+        />
+        <FeatureSection
+          title="HellaBlanks"
+          tagline="Clean, logo-free essentials. Just the fit."
+          items={blanks}
         />
       </div>
 
