@@ -106,6 +106,11 @@ export const backend = {
       p_carrier: args.carrier,
     }),
   getOrder: (id: string) => rpc("backend_get_order", { p_id: id }) as Promise<OrderSummary | null>,
+  /** Full order row (includes recipient + items) for payment fulfillment. */
+  getOrderBySession: (sessionId: string) =>
+    rpc("backend_get_order_by_session", { p_session_id: sessionId }) as Promise<
+      Record<string, unknown> | null
+    >,
   /** Appends a row to the webhook activity log (best effort). */
   logWebhook: (entry: {
     eventType: string | null;

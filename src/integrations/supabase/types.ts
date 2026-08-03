@@ -31,18 +31,21 @@ export type Database = {
       }
       orders: {
         Row: {
+          amount_paid: number
           carrier: string | null
           created_at: string
           currency: string
           email: string
           id: string
           items: Json
+          payment_status: string
           printful_order_id: number | null
           printful_payload: Json | null
           recipient: Json
           shipping_cost: number
           shipping_method: string | null
           status: string
+          stripe_session_id: string | null
           subtotal: number
           tax: number
           total: number
@@ -51,18 +54,21 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amount_paid?: number
           carrier?: string | null
           created_at?: string
           currency?: string
           email: string
           id?: string
           items: Json
+          payment_status?: string
           printful_order_id?: number | null
           printful_payload?: Json | null
           recipient: Json
           shipping_cost?: number
           shipping_method?: string | null
           status?: string
+          stripe_session_id?: string | null
           subtotal?: number
           tax?: number
           total?: number
@@ -71,18 +77,21 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amount_paid?: number
           carrier?: string | null
           created_at?: string
           currency?: string
           email?: string
           id?: string
           items?: Json
+          payment_status?: string
           printful_order_id?: number | null
           printful_payload?: Json | null
           recipient?: Json
           shipping_cost?: number
           shipping_method?: string | null
           status?: string
+          stripe_session_id?: string | null
           subtotal?: number
           tax?: number
           total?: number
@@ -257,6 +266,10 @@ export type Database = {
       }
       backend_get_order: {
         Args: { p_id: string; p_secret: string }
+        Returns: Json
+      }
+      backend_get_order_by_session: {
+        Args: { p_secret: string; p_session_id: string }
         Returns: Json
       }
       backend_list_webhook_logs: {

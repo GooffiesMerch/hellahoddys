@@ -1,9 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
 import { cartItemKey, useCart } from "@/lib/cart";
 import { formatPrice } from "@/lib/products";
-import { createPrintfulOrder, getShippingRates } from "@/lib/printful.functions";
+import { getShippingRates } from "@/lib/printful.functions";
+import { createCheckoutSession } from "@/lib/payments.functions";
+import { getStripe, getStripeEnvironment } from "@/lib/stripe";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
 const COUNTRIES: Array<{ code: string; name: string }> = [
   { code: "US", name: "United States" },
@@ -99,10 +103,9 @@ const emptyForm = {
 };
 
 function CheckoutPage() {
-  const { items, subtotal, clear } = useCart();
-  const navigate = useNavigate();
+  const { items, subtotal } = useCart();
   const fetchRates = useServerFn(getShippingRates);
-  const placeOrder = useServerFn(createPrintfulOrder);
+  const startCheckout = useServerFn(createCheckoutSession);
 
   const [form, setForm] = useState(emptyForm);
   const [rates, setRates] = useState<Rate[]>([]);
@@ -110,6 +113,7 @@ function CheckoutPage() {
   const [loadingRates, setLoadingRates] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   const lines = items.map((i) => ({
     handle: i.handle,
@@ -160,13 +164,20 @@ function CheckoutPage() {
     setError(null);
     setPlacing(true);
     try {
-      const res = await placeOrder({
-        data: { recipient: form, items: lines, shippingMethod: shippingMethod || "STANDARD" },
+      const res = await startCheckout({
+        data: {
+          recipient: form,
+          items: lines,
+          shippingMethod: shippingMethod || "STANDARD",
+          returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
+          environment: getStripeEnvironment(),
+        },
       });
-      clear();
-      navigate({ to: "/orders/$id", params: { id: res.orderId } });
+      if ("error" in res) throw new Error(res.error);
+      if (!res.clientSecret) throw new Error("Stripe did not return a checkout session.");
+      setClientSecret(res.clientSecret);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not place your order.");
+      setError(err instanceof Error ? err.message : "Could not start payment.");
     } finally {
       setPlacing(false);
     }
@@ -184,8 +195,13 @@ function CheckoutPage() {
   const selected = rates.find((r) => r.id === shippingMethod);
   const shippingCost = selected ? Number(selected.rate) : 0;
 
+  if (clientSecret) {
+    return <PaymentStep clientSecret={clientSecret} onBack={() => setClientSecret(null)} />;
+  }
+
   return (
     <div className="mx-auto max-w-[1200px] px-6 lg:px-10 py-12">
+      <PaymentTestModeBanner />
       <h1 className="text-4xl font-black tracking-tight">Checkout</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Every piece is printed and shipped on demand by our fulfillment partner.
@@ -325,14 +341,41 @@ function CheckoutPage() {
             disabled={placing}
             className="mt-6 w-full rounded-md bg-brand py-3 text-sm font-semibold text-brand-foreground hover:opacity-90 disabled:opacity-60"
           >
-            {placing ? "Placing order…" : "Place order"}
+            {placing ? "Starting payment…" : "Continue to payment"}
           </button>
           <p className="mt-3 text-xs text-muted-foreground">
-            Online payment isn't switched on yet — your order is submitted to our fulfillment
-            partner as a draft and we'll follow up by email to collect payment.
+            Payments are processed securely by Stripe. Your order goes into production as soon as
+            payment is confirmed.
           </p>
         </aside>
       </form>
+    </div>
+  );
+}
+
+function PaymentStep({ clientSecret, onBack }: { clientSecret: string; onBack: () => void }) {
+  // Stable identity: a new fetcher on each render would remount the provider.
+  const fetchClientSecret = useCallback(async () => clientSecret, [clientSecret]);
+  const options = useMemo(() => ({ fetchClientSecret }), [fetchClientSecret]);
+
+  return (
+    <div className="mx-auto max-w-[900px] px-6 lg:px-10 py-12">
+      <PaymentTestModeBanner />
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h1 className="text-3xl font-black tracking-tight">Payment</h1>
+        <button
+          type="button"
+          onClick={onBack}
+          className="rounded-md border border-border px-4 py-2 text-xs font-semibold hover:bg-accent"
+        >
+          Back to details
+        </button>
+      </div>
+      <div id="checkout" className="rounded-md border border-border p-2">
+        <EmbeddedCheckoutProvider stripe={getStripe()} options={options}>
+          <EmbeddedCheckout />
+        </EmbeddedCheckoutProvider>
+      </div>
     </div>
   );
 }
