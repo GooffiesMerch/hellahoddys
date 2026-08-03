@@ -38,6 +38,34 @@ const COUNTRIES: Array<{ code: string; name: string }> = [
   { code: "ZA", name: "South Africa" },
 ];
 
+const STATES: Record<string, Array<{ code: string; name: string }>> = {
+  US: [
+    ["AL","Alabama"],["AK","Alaska"],["AZ","Arizona"],["AR","Arkansas"],["CA","California"],
+    ["CO","Colorado"],["CT","Connecticut"],["DE","Delaware"],["DC","District of Columbia"],
+    ["FL","Florida"],["GA","Georgia"],["HI","Hawaii"],["ID","Idaho"],["IL","Illinois"],
+    ["IN","Indiana"],["IA","Iowa"],["KS","Kansas"],["KY","Kentucky"],["LA","Louisiana"],
+    ["ME","Maine"],["MD","Maryland"],["MA","Massachusetts"],["MI","Michigan"],["MN","Minnesota"],
+    ["MS","Mississippi"],["MO","Missouri"],["MT","Montana"],["NE","Nebraska"],["NV","Nevada"],
+    ["NH","New Hampshire"],["NJ","New Jersey"],["NM","New Mexico"],["NY","New York"],
+    ["NC","North Carolina"],["ND","North Dakota"],["OH","Ohio"],["OK","Oklahoma"],["OR","Oregon"],
+    ["PA","Pennsylvania"],["RI","Rhode Island"],["SC","South Carolina"],["SD","South Dakota"],
+    ["TN","Tennessee"],["TX","Texas"],["UT","Utah"],["VT","Vermont"],["VA","Virginia"],
+    ["WA","Washington"],["WV","West Virginia"],["WI","Wisconsin"],["WY","Wyoming"],
+    ["PR","Puerto Rico"],
+  ].map(([code, name]) => ({ code, name })),
+  CA: [
+    ["AB","Alberta"],["BC","British Columbia"],["MB","Manitoba"],["NB","New Brunswick"],
+    ["NL","Newfoundland and Labrador"],["NS","Nova Scotia"],["NT","Northwest Territories"],
+    ["NU","Nunavut"],["ON","Ontario"],["PE","Prince Edward Island"],["QC","Quebec"],
+    ["SK","Saskatchewan"],["YT","Yukon"],
+  ].map(([code, name]) => ({ code, name })),
+  AU: [
+    ["ACT","Australian Capital Territory"],["NSW","New South Wales"],["NT","Northern Territory"],
+    ["QLD","Queensland"],["SA","South Australia"],["TAS","Tasmania"],["VIC","Victoria"],
+    ["WA","Western Australia"],
+  ].map(([code, name]) => ({ code, name })),
+};
+
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
@@ -96,10 +124,17 @@ function CheckoutPage() {
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const setCountry = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    setForm((f) => ({ ...f, country_code: e.target.value }));
+    setForm((f) => ({ ...f, country_code: e.target.value, state_code: "" }));
+
+  const stateOptions = STATES[form.country_code];
 
   const canQuote =
-    form.address1 && form.city && form.zip && form.country_code && items.length > 0;
+    form.address1 &&
+    form.city &&
+    form.zip &&
+    form.country_code &&
+    (!STATES[form.country_code] || form.state_code) &&
+    items.length > 0;
 
   async function onQuote() {
     setError(null);
@@ -166,7 +201,28 @@ function CheckoutPage() {
               <Field label="Address" value={form.address1} onChange={set("address1")} required className="sm:col-span-2" />
               <Field label="Apt, suite (optional)" value={form.address2} onChange={set("address2")} className="sm:col-span-2" />
               <Field label="City" value={form.city} onChange={set("city")} required />
-              <Field label="State / region code" value={form.state_code} onChange={set("state_code")} placeholder="CA" />
+              {stateOptions ? (
+                <label className="block text-sm">
+                  <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    State / province
+                  </span>
+                  <select
+                    value={form.state_code}
+                    onChange={(e) => setForm((f) => ({ ...f, state_code: e.target.value }))}
+                    required
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+                  >
+                    <option value="">Select a state</option>
+                    {stateOptions.map((s) => (
+                      <option key={s.code} value={s.code}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <Field label="State / region (optional)" value={form.state_code} onChange={set("state_code")} />
+              )}
               <Field label="ZIP / postal code" value={form.zip} onChange={set("zip")} required />
               <label className="block text-sm">
                 <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted-foreground">

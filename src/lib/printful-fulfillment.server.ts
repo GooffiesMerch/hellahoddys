@@ -280,7 +280,6 @@ export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
         zip: recipient.zip,
       },
       order_items: printfulItems.map((i) => ({
-        source: "sync_product",
         sync_variant_id: i.sync_variant_id,
         quantity: i.quantity,
       })),
