@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { db } from "./db.server";
 import type { Product, Variant } from "./products";
 
 /** Throttle window for the automatic Printful refresh (per worker instance). */
@@ -44,7 +44,7 @@ function slugify(s: string): string {
  * Product shape so published Printful products can render on the site.
  */
 export async function loadPrintfulCatalog(): Promise<Product[]> {
-  const { count } = await supabaseAdmin
+  const { count } = await db
     .from("printful_products")
     .select("id", { count: "exact", head: true });
 
@@ -52,11 +52,11 @@ export async function loadPrintfulCatalog(): Promise<Product[]> {
   await autoRefresh(!count);
 
   const [{ data: prods }, { data: vars }] = await Promise.all([
-    supabaseAdmin
+    db
       .from("printful_products")
       .select("id, external_id, name, thumbnail_url")
       .order("name"),
-    supabaseAdmin
+    db
       .from("printful_variants")
       .select("id, product_id, sku, name, size, color, retail_price, currency"),
   ]);
