@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      backend_secrets: {
+        Row: {
+          name: string
+          secret: string
+        }
+        Insert: {
+          name: string
+          secret: string
+        }
+        Update: {
+          name?: string
+          secret?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           carrier: string | null
@@ -195,7 +210,51 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      backend_auth: { Args: { p_secret: string }; Returns: undefined }
+      backend_create_order: {
+        Args: { p_order: Json; p_secret: string }
+        Returns: string
+      }
+      backend_delete_products: {
+        Args: { p_ids: number[]; p_secret: string }
+        Returns: undefined
+      }
+      backend_get_order: {
+        Args: { p_id: string; p_secret: string }
+        Returns: Json
+      }
+      backend_record_webhook_event: {
+        Args: {
+          p_event_id: string
+          p_event_type: string
+          p_printful_order_id: number
+          p_secret: string
+        }
+        Returns: boolean
+      }
+      backend_update_order: {
+        Args: { p_id: string; p_patch: Json; p_secret: string }
+        Returns: undefined
+      }
+      backend_update_order_tracking: {
+        Args: {
+          p_carrier: string
+          p_printful_order_id: number
+          p_secret: string
+          p_status: string
+          p_tracking_number: string
+          p_tracking_url: string
+        }
+        Returns: undefined
+      }
+      backend_upsert_products: {
+        Args: { p_rows: Json; p_secret: string }
+        Returns: undefined
+      }
+      backend_upsert_variants: {
+        Args: { p_rows: Json; p_secret: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
