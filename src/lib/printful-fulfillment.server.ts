@@ -304,6 +304,7 @@ export async function placeOrder(
   recipient: Recipient,
   items: OrderLine[],
   shippingMethod: string,
+  opts: { orderId?: string; confirm?: boolean } = {},
 ) {
   const { printfulItems, unmatched, storeId } = await buildPrintfulItems(items);
   if (printfulItems.length === 0) {
@@ -315,19 +316,23 @@ export async function placeOrder(
   const subtotal = items.reduce((n, i) => n + i.price * i.quantity, 0);
 
   let orderId: string;
-  try {
-    orderId = await backend.createOrder({
-      status: "pending",
-      email: recipient.email,
-      recipient,
-      items,
-      subtotal,
-      total: subtotal,
-      shipping_method: shippingMethod,
-    });
-  } catch (err) {
-    console.error("Failed to save order", err);
-    throw new Error("Could not save your order. Please try again.");
+  if (opts.orderId) {
+    orderId = opts.orderId;
+  } else {
+    try {
+      orderId = await backend.createOrder({
+        status: "pending",
+        email: recipient.email,
+        recipient,
+        items,
+        subtotal,
+        total: subtotal,
+        shipping_method: shippingMethod,
+      });
+    } catch (err) {
+      console.error("Failed to save order", err);
+      throw new Error("Could not save your order. Please try again.");
+    }
   }
 
   // confirm=false => the order is created as a draft in Printful and is only
@@ -357,7 +362,6 @@ export async function placeOrder(
         phone: recipient.phone || undefined,
       },
       order_items: printfulItems.map((i) => ({
-        source: "sync_product",
         sync_variant_id: i.sync_variant_id,
         quantity: i.quantity,
         retail_price: i.retail_price,
@@ -367,29 +371,66 @@ export async function placeOrder(
 
   const result = created?.data ?? ({} as { id: number; status: string; costs?: Record<string, string> });
 
-  const shippingCost = Number(result.costs?.shipping ?? 0);
-  const tax = Number(result.costs?.tax ?? 0);
-  const total = Number(result.costs?.total ?? subtotal + shippingCost + tax);
+  // Paid orders are confirmed immediately so Printful starts production.
+  let confirmed: typeof result | null = null;
+  if (opts.confirm && result.id) {
+    try {
+      const res = await printful<{ data: typeof result }>(
+        `/v2/orders/${result.id}/confirmation`,
+        { method: "POST" },
+        storeId,
+      );
+      confirmed = res?.data ?? null;
+    } catch (err) {
+      console.error(`Printful confirmation failed for order ${result.id}`, err);
+    }
+  }
+  const final = confirmed ?? result;
+
+  const shippingCost = Number(final.costs?.shipping ?? 0);
+  const tax = Number(final.costs?.tax ?? 0);
+  const total = Number(final.costs?.total ?? subtotal + shippingCost + tax);
 
   await backend.updateOrder(orderId, {
-    printful_order_id: result.id,
-    status: result.status ?? "draft",
-    shipping_cost: shippingCost,
-    tax,
-    total,
-    currency: result.costs?.currency ?? "USD",
-    printful_payload: result,
+    printful_order_id: final.id,
+    status: final.status ?? "draft",
+    printful_payload: final,
   });
 
   return {
     orderId,
-    printfulOrderId: result.id,
-    status: result.status ?? "draft",
+    printfulOrderId: final.id,
+    status: final.status ?? "draft",
     shippingCost,
     tax,
     total,
     unmatched,
   };
+}
+
+/**
+ * Re-prices cart lines from the cached Printful catalog so the amount charged
+ * is always the catalog price, never a value supplied by the browser.
+ */
+export async function repriceItems(items: OrderLine[]) {
+  const unmatched: string[] = [];
+  const lines: OrderLine[] = [];
+  for (const line of items) {
+    const hit = await resolveVariantId(line);
+    if (!hit) {
+      unmatched.push(line.title);
+      lines.push(line);
+      continue;
+    }
+    const { data } = await db
+      .from("printful_variants")
+      .select("retail_price")
+      .eq("id", hit.id)
+      .maybeSingle();
+    const price = data?.retail_price != null ? Number(data.retail_price) : line.price;
+    lines.push({ ...line, price });
+  }
+  return { lines, unmatched };
 }
 
 export async function orderStatus(id: string) {
