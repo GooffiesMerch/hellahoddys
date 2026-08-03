@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { backend, db } from "./db.server";
 import {
   printful,
   parseVariantName,
@@ -61,16 +61,18 @@ async function cacheProduct(store: PrintfulStoreRef, p: SyncProductSummary): Pro
   const syncVariants = detail?.data ?? [];
   const now = new Date().toISOString();
 
-  await supabaseAdmin.from("printful_products").upsert({
-    id: p.id,
-    external_id: p.external_id ?? null,
-    name: p.name,
-    thumbnail_url: p.thumbnail_url ?? null,
-    variant_count: syncVariants.length,
-    store_id: store.id,
-    store_name: store.name,
-    synced_at: now,
-  });
+  await backend.upsertProducts([
+    {
+      id: p.id,
+      external_id: p.external_id ?? null,
+      name: p.name,
+      thumbnail_url: p.thumbnail_url ?? null,
+      variant_count: syncVariants.length,
+      store_id: store.id,
+      store_name: store.name,
+      synced_at: now,
+    },
+  ]);
 
   const rows = syncVariants.map((v) => {
     const parsed = parseVariantName(v.name);
@@ -92,16 +94,15 @@ async function cacheProduct(store: PrintfulStoreRef, p: SyncProductSummary): Pro
   });
 
   if (rows.length > 0) {
-    await supabaseAdmin.from("printful_variants").upsert(rows);
+    await backend.upsertVariants(rows);
   }
   return rows.length;
 }
 
 /** Drop products (and their variants) that no longer exist in Printful. */
-async function removeProducts(ids: number[]) {
+export async function removeProducts(ids: number[]) {
   if (ids.length === 0) return;
-  await supabaseAdmin.from("printful_variants").delete().in("product_id", ids);
-  await supabaseAdmin.from("printful_products").delete().in("id", ids);
+  await backend.deleteProducts(ids);
 }
 
 /**
@@ -116,7 +117,7 @@ export async function syncCatalog(options: { full?: boolean } = {}) {
   let variants = 0;
   const perStore: Array<{ id: number; name: string; products: number }> = [];
 
-  const { data: cachedRows } = await supabaseAdmin
+  const { data: cachedRows } = await db
     .from("printful_products")
     .select("id, variant_count");
   const cached = new Map<number, number>(
@@ -196,7 +197,7 @@ async function resolveVariantId(
   line: OrderLine,
 ): Promise<{ id: number; storeId: number | null } | null> {
   if (line.sku) {
-    const { data } = await supabaseAdmin
+    const { data } = await db
       .from("printful_variants")
       .select("id, store_id")
       .or(`sku.eq.${line.sku},external_id.eq.${line.sku}`)
@@ -206,7 +207,7 @@ async function resolveVariantId(
   }
 
   // Fall back to matching the product name + variant label (e.g. "Black / L").
-  const { data } = await supabaseAdmin
+  const { data } = await db
     .from("printful_variants")
     .select("id, name, store_id")
     .ilike("name", `%${line.title.replace(/%/g, "")}%`)
