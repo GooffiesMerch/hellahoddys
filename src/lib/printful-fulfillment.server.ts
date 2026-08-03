@@ -364,21 +364,18 @@ export async function placeOrder(
   const tax = Number(result.costs?.tax ?? 0);
   const total = Number(result.costs?.total ?? subtotal + shippingCost + tax);
 
-  await supabaseAdmin
-    .from("orders")
-    .update({
-      printful_order_id: result.id,
-      status: result.status ?? "draft",
-      shipping_cost: shippingCost,
-      tax,
-      total,
-      currency: result.costs?.currency ?? "USD",
-      printful_payload: result as unknown as never,
-    })
-    .eq("id", order.id);
+  await backend.updateOrder(orderId, {
+    printful_order_id: result.id,
+    status: result.status ?? "draft",
+    shipping_cost: shippingCost,
+    tax,
+    total,
+    currency: result.costs?.currency ?? "USD",
+    printful_payload: result,
+  });
 
   return {
-    orderId: order.id as string,
+    orderId,
     printfulOrderId: result.id,
     status: result.status ?? "draft",
     shippingCost,
@@ -389,13 +386,5 @@ export async function placeOrder(
 }
 
 export async function orderStatus(id: string) {
-  const { data } = await supabaseAdmin
-    .from("orders")
-    .select(
-      "id, status, email, items, subtotal, shipping_cost, tax, total, currency, tracking_number, tracking_url, carrier, created_at",
-    )
-    .eq("id", id)
-    .maybeSingle();
-
-  return data ?? null;
+  return (await backend.getOrder(id)) ?? null;
 }
