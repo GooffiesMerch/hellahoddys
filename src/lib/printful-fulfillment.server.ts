@@ -309,22 +309,19 @@ export async function placeOrder(
 
   const subtotal = items.reduce((n, i) => n + i.price * i.quantity, 0);
 
-  const { data: order, error } = await supabaseAdmin
-    .from("orders")
-    .insert({
+  let orderId: string;
+  try {
+    orderId = await backend.createOrder({
       status: "pending",
       email: recipient.email,
-      recipient: recipient as unknown as never,
-      items: items as unknown as never,
+      recipient,
+      items,
       subtotal,
       total: subtotal,
       shipping_method: shippingMethod,
-    })
-    .select("id")
-    .single();
-
-  if (error || !order) {
-    console.error("Failed to save order", error);
+    });
+  } catch (err) {
+    console.error("Failed to save order", err);
     throw new Error("Could not save your order. Please try again.");
   }
 
@@ -339,7 +336,7 @@ export async function placeOrder(
   }>("/v2/orders", {
     method: "POST",
     body: JSON.stringify({
-      external_id: order.id,
+      external_id: orderId,
       shipping: shippingMethod,
       recipient: {
         name: recipient.name,
