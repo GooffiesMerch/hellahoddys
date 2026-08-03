@@ -56,6 +56,22 @@ async function rpc(name: string, args: Record<string, unknown>): Promise<any> {
   return data;
 }
 
+export interface OrderSummary {
+  id: string;
+  status: string;
+  email: string;
+  items: unknown;
+  subtotal: number;
+  shipping_cost: number;
+  tax: number;
+  total: number;
+  currency: string;
+  tracking_number: string | null;
+  tracking_url: string | null;
+  carrier: string | null;
+  created_at: string;
+}
+
 export const backend = {
   upsertProducts: (rows: unknown[]) => rpc("backend_upsert_products", { p_rows: rows }),
   upsertVariants: (rows: unknown[]) => rpc("backend_upsert_variants", { p_rows: rows }),
@@ -78,8 +94,7 @@ export const backend = {
       p_tracking_url: args.trackingUrl,
       p_carrier: args.carrier,
     }),
-  getOrder: (id: string) =>
-    rpc("backend_get_order", { p_id: id }) as Promise<Record<string, unknown> | null>,
+  getOrder: (id: string) => rpc("backend_get_order", { p_id: id }) as Promise<OrderSummary | null>,
   /** Returns true when the event is new, false when it is a replay. */
   recordWebhookEvent: (eventId: string, type: string | null, orderId: number | null) =>
     rpc("backend_record_webhook_event", {
