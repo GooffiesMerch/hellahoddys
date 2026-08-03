@@ -265,7 +265,7 @@ function SiteFooter() {
       <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-16">
         <div className="grid gap-12 md:grid-cols-4">
           <div className="md:col-span-1">
-            <img src={logoAsset.url} alt="Hella Hoodys" className="h-10 w-auto rounded-sm bg-white p-1.5" />
+            <img src="/images/hella-hoodys-logo.jpg" alt="Hella Hoodys" className="h-10 w-auto rounded-sm bg-white p-1.5" />
             <p className="mt-4 max-w-xs text-sm text-footer-foreground/70">
               It's always HOODY season.
             </p>
