@@ -71,6 +71,15 @@ function Shop() {
   const visibleOthers = filterItems(grouped.others);
   const anyVisible = visibleGroups.length > 0 || visibleOthers.length > 0;
 
+  const match = (words: string[]) =>
+    catalog.filter(
+      (p) =>
+        p.images.length > 0 &&
+        words.some((w) => (p.title + " " + p.tags + " " + p.type).toLowerCase().includes(w)),
+    );
+  const collabs = filterItems(match(["collab"]));
+  const blanks = filterItems(match(["blank"]));
+
   return (
     <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-12">
       <div className="mb-10 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -85,6 +94,19 @@ function Shop() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search products…"
           className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring sm:w-72"
+        />
+      </div>
+
+      <div className="mb-16 grid gap-6 md:grid-cols-2">
+        <FeatureSection
+          title="HellaCollabs"
+          tagline="Limited team-ups with artists, creators and campuses."
+          items={collabs}
+        />
+        <FeatureSection
+          title="HellaBlanks"
+          tagline="Clean, logo-free essentials. Just the fit."
+          items={blanks}
         />
       </div>
 
