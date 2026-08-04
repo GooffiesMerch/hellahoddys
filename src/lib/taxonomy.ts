@@ -144,14 +144,24 @@ export const categories: Category[] = [
     name: "HellaCollabs",
     tagline: "Limited team-ups with artists, creators and campuses.",
     match: (t) => has(t, ["collab"]),
-    subs: [],
+    subs: [
+      { slug: "artists", name: "Artists", match: (t) => has(t, ["artist", "art ", "designer", "illustrat"]) },
+      { slug: "creators", name: "Creators", match: (t) => has(t, ["creator", "influencer", "streamer", "podcast"]) },
+      { slug: "campuses", name: "Campuses", match: (t) => isCollege(t) },
+      { slug: "limited", name: "Limited Editions", match: (t) => has(t, ["limited", "drop", "exclusive", "capsule"]) },
+    ],
   },
   {
     slug: "hellablanks",
     name: "HellaBlanks",
     tagline: "Clean, logo-free essentials. Just the fit.",
     match: (t) => has(t, ["blank"]),
-    subs: [],
+    subs: [
+      { slug: "hoodies", name: "Hoodies", match: (t) => has(t, ["hoody", "hoodie"]) && !has(t, ["zip", "crop"]) },
+      { slug: "zip-ups", name: "Zip-Ups", match: (t) => has(t, ["zip"]) },
+      { slug: "crops", name: "Crops", match: (t) => has(t, ["crop"]) },
+      { slug: "tees", name: "Tees", match: (t) => has(t, ["tee", "t-shirt", "shirt"]) },
+    ],
   },
 ];
 
