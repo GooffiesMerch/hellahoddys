@@ -16,6 +16,8 @@ export interface Category {
 
 export const productText = (p: Product) =>
   (p.title + " " + p.tags + " " + p.type).toLowerCase();
+/** Same text with spaces/dashes stripped, so "hella collab" == "hellacollab". */
+const compact = (t: string) => t.replace(/[\s\-_]/g, "");
 const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
 const word = (t: string, words: string[]) =>
   words.some((w) =>
@@ -143,7 +145,7 @@ export const categories: Category[] = [
     slug: "hellacollabs",
     name: "HellaCollabs",
     tagline: "Limited team-ups with artists, creators and campuses.",
-    match: (t) => has(t, ["collab"]),
+    match: (t) => has(compact(t), ["collab"]),
     subs: [
       { slug: "artists", name: "Artists", match: (t) => has(t, ["artist", "art ", "designer", "illustrat"]) },
       { slug: "creators", name: "Creators", match: (t) => has(t, ["creator", "influencer", "streamer", "podcast"]) },
@@ -155,7 +157,7 @@ export const categories: Category[] = [
     slug: "hellablanks",
     name: "HellaBlanks",
     tagline: "Clean, logo-free essentials. Just the fit.",
-    match: (t) => has(t, ["blank"]),
+    match: (t) => has(compact(t), ["blank"]),
     subs: [
       { slug: "hoodies", name: "Hoodies", match: (t) => has(t, ["hoody", "hoodie"]) && !has(t, ["zip", "crop"]) },
       { slug: "zip-ups", name: "Zip-Ups", match: (t) => has(t, ["zip"]) },
