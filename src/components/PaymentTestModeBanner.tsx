@@ -1,25 +1,36 @@
-const clientToken = import.meta.env.VITE_PAYMENTS_CLIENT_TOKEN as string | undefined;
+import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { getPaypalConfig } from "@/lib/payments.functions";
 
+/** Shows a notice while PayPal is running in sandbox (test) mode. */
 export function PaymentTestModeBanner() {
-  if (!clientToken) {
+  const loadConfig = useServerFn(getPaypalConfig);
+  const [state, setState] = useState<{ clientId: string; environment: string } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    loadConfig({})
+      .then((c) => active && setState(c))
+      .catch(() => active && setState({ clientId: "", environment: "sandbox" }));
+    return () => {
+      active = false;
+    };
+  }, [loadConfig]);
+
+  if (!state) return null;
+
+  if (!state.clientId) {
     return (
       <div className="w-full border-b border-destructive/40 bg-destructive/10 px-4 py-2 text-center text-xs text-destructive">
-        Checkout is not configured for live payments yet.
+        PayPal is not configured yet — checkout is unavailable.
       </div>
     );
   }
-  if (clientToken.startsWith("pk_test_")) {
+
+  if (state.environment === "sandbox") {
     return (
       <div className="w-full border-b border-primary/30 bg-primary/10 px-4 py-2 text-center text-xs text-foreground">
-        Payments are in test mode — use card 4242 4242 4242 4242.{" "}
-        <a
-          href="https://docs.lovable.dev/features/payments#test-and-live-environments"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium underline"
-        >
-          Read more
-        </a>
+        Payments are in PayPal sandbox mode — use a sandbox buyer account to test.
       </div>
     );
   }

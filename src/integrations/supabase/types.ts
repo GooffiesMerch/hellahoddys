@@ -39,6 +39,7 @@ export type Database = {
           id: string
           items: Json
           payment_status: string
+          paypal_order_id: string | null
           printful_order_id: number | null
           printful_payload: Json | null
           recipient: Json
@@ -62,6 +63,7 @@ export type Database = {
           id?: string
           items: Json
           payment_status?: string
+          paypal_order_id?: string | null
           printful_order_id?: number | null
           printful_payload?: Json | null
           recipient: Json
@@ -85,6 +87,7 @@ export type Database = {
           id?: string
           items?: Json
           payment_status?: string
+          paypal_order_id?: string | null
           printful_order_id?: number | null
           printful_payload?: Json | null
           recipient?: Json
