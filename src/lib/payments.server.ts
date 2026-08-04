@@ -1,9 +1,5 @@
 import { backend } from "./db.server";
-import {
-  createStripeClient,
-  type StripeEnv,
-  type StripeCheckoutSession,
-} from "./stripe.server";
+import { paypalRequest } from "./paypal.server";
 import {
   placeOrder,
   repriceItems,
@@ -12,71 +8,46 @@ import {
   type Recipient,
 } from "./printful-fulfillment.server";
 
-const TANGIBLE_GOODS_TAX_CODE = "txcd_99999999";
+const money = (n: number) => ({ currency_code: "USD", value: n.toFixed(2) });
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
-function cents(n: number) {
-  return Math.round(n * 100);
+interface PaypalOrder {
+  id: string;
+  status: string;
+  purchase_units?: Array<{
+    amount?: { value?: string; currency_code?: string; breakdown?: Record<string, { value?: string }> };
+    payments?: { captures?: Array<{ id: string; status: string; amount?: { value?: string; currency_code?: string } }> };
+  }>;
 }
 
-/** Reuse a Stripe customer per email so repeat buyers keep one record. */
-async function resolveCustomer(
-  stripe: ReturnType<typeof createStripeClient>,
-  recipient: Recipient,
-) {
-  const address = {
-    line1: recipient.address1,
-    line2: recipient.address2 || undefined,
-    city: recipient.city,
-    state: recipient.state_code || undefined,
-    postal_code: recipient.zip,
-    country: recipient.country_code,
-  };
-  const existing = await stripe.customers.list({ email: recipient.email, limit: 1 });
-  if (existing.data.length) {
-    const id = existing.data[0].id;
-    await stripe.customers.update(id, { name: recipient.name, address, shipping: { name: recipient.name, address } });
-    return id;
-  }
-  const created = await stripe.customers.create({
-    email: recipient.email,
-    name: recipient.name,
-    address,
-    shipping: { name: recipient.name, address },
-  });
-  return created.id;
-}
-
+/**
+ * Creates a pending order in our database and a matching PayPal order.
+ * Prices and shipping are always recomputed server-side — never trusted
+ * from the browser.
+ */
 export async function createCheckout(input: {
   recipient: Recipient;
   items: OrderLine[];
   shippingMethod: string;
-  returnUrl: string;
-  environment: StripeEnv;
 }) {
-  const stripe = createStripeClient(input.environment);
-
-  // Never trust browser prices: re-read them from the cached Printful catalog.
   const { lines, unmatched } = await repriceItems(input.items);
   if (unmatched.length === lines.length) {
     throw new Error("These items are not available for fulfillment right now.");
   }
 
-  // Re-quote shipping server-side too, so the charged rate is authoritative.
   let shippingCost = 0;
-  let shippingLabel = "Shipping";
   try {
     const quote = await shippingRates(input.recipient, lines);
     const match =
       quote.rates.find((r) => r.id === input.shippingMethod) ?? quote.rates[0] ?? null;
-    if (match) {
-      shippingCost = Number(match.rate) || 0;
-      shippingLabel = match.name;
-    }
+    if (match) shippingCost = Number(match.rate) || 0;
   } catch (err) {
     console.error("Shipping re-quote failed; charging shipping at $0", err);
   }
+  shippingCost = round2(shippingCost);
 
-  const subtotal = lines.reduce((n, l) => n + l.price * l.quantity, 0);
+  const subtotal = round2(lines.reduce((n, l) => n + l.price * l.quantity, 0));
+  const total = round2(subtotal + shippingCost);
 
   const orderId = await backend.createOrder({
     status: "awaiting_payment",
@@ -86,100 +57,103 @@ export async function createCheckout(input: {
     items: lines,
     subtotal,
     shipping_cost: shippingCost,
-    total: subtotal + shippingCost,
+    total,
     shipping_method: input.shippingMethod,
     currency: "USD",
   });
 
-  const customer = await resolveCustomer(stripe, input.recipient);
-
-  const params: Record<string, unknown> = {
-    mode: "payment",
-    ui_mode: "embedded_page",
-    return_url: input.returnUrl,
-    customer,
-    line_items: lines.map((l) => ({
-      quantity: l.quantity,
-      price_data: {
-        currency: "usd",
-        unit_amount: cents(l.price),
-        tax_behavior: "exclusive",
-        product_data: {
-          name: `${l.title}${l.variantLabel ? ` — ${l.variantLabel}` : ""}`.slice(0, 250),
-          tax_code: TANGIBLE_GOODS_TAX_CODE,
+  const paypalOrder = await paypalRequest<PaypalOrder>("/v2/checkout/orders", {
+    method: "POST",
+    requestId: orderId,
+    body: {
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          custom_id: orderId,
+          invoice_id: `HH-${orderId.slice(0, 8)}-${Date.now().toString(36)}`,
+          description: `Hella Hoodys order ${orderId.slice(0, 8)}`,
+          amount: {
+            ...money(total),
+            breakdown: { item_total: money(subtotal), shipping: money(shippingCost) },
+          },
+          items: lines.map((l) => ({
+            name: `${l.title}${l.variantLabel ? ` — ${l.variantLabel}` : ""}`.slice(0, 127),
+            quantity: String(l.quantity),
+            unit_amount: money(round2(l.price)),
+            category: "PHYSICAL_GOODS",
+          })),
+          shipping: {
+            type: "SHIPPING",
+            name: { full_name: input.recipient.name.slice(0, 300) },
+            address: {
+              address_line_1: input.recipient.address1,
+              ...(input.recipient.address2 ? { address_line_2: input.recipient.address2 } : {}),
+              admin_area_2: input.recipient.city,
+              ...(input.recipient.state_code ? { admin_area_1: input.recipient.state_code } : {}),
+              postal_code: input.recipient.zip,
+              country_code: input.recipient.country_code,
+            },
+          },
+        },
+      ],
+      payment_source: {
+        paypal: {
+          experience_context: {
+            shipping_preference: "SET_PROVIDED_ADDRESS",
+            user_action: "PAY_NOW",
+            brand_name: "Hella Hoodys",
+          },
         },
       },
-    })),
-    ...(shippingCost > 0
-      ? {
-          shipping_options: [
-            {
-              shipping_rate_data: {
-                type: "fixed_amount",
-                display_name: shippingLabel,
-                tax_behavior: "exclusive",
-                fixed_amount: { amount: cents(shippingCost), currency: "usd" },
-              },
-            },
-          ],
-        }
-      : {}),
-    payment_intent_data: {
-      description: `Hella Hoodys order ${orderId.slice(0, 8)}`,
-      receipt_email: input.recipient.email,
-      metadata: { orderId },
     },
-    metadata: { orderId },
-    automatic_tax: { enabled: true },
-  };
+  });
 
-  let session: StripeCheckoutSession;
-  try {
-    session = await stripe.checkout.sessions.create(params);
-  } catch (err) {
-    // Stripe Tax may not be activated yet — fall back to a tax-free session
-    // rather than blocking the sale.
-    console.error("Checkout session with automatic tax failed; retrying without", err);
-    delete params["automatic_tax"];
-    session = await stripe.checkout.sessions.create(params);
-  }
+  await backend.updateOrder(orderId, { paypal_order_id: paypalOrder.id });
 
-  await backend.updateOrder(orderId, { stripe_session_id: session.id });
-
-  return { clientSecret: session.client_secret ?? "", orderId, unmatched };
+  return { paypalOrderId: paypalOrder.id, orderId, unmatched };
 }
 
 /**
- * Confirms payment for a checkout session and sends the order to Printful.
- * Safe to call repeatedly (return page + webhook both call it).
+ * Captures a PayPal order and hands the paid order to Printful.
+ * Safe to call more than once — a captured order is simply re-read.
  */
-export async function finalizeCheckout(sessionId: string, environment: StripeEnv) {
-  const stripe = createStripeClient(environment);
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-  const order = await backend.getOrderBySession(sessionId);
+export async function finalizeCheckout(paypalOrderId: string) {
+  const order = await backend.getOrderBySession(paypalOrderId);
   if (!order) return { paid: false, orderId: null, status: "unknown" as const };
 
   const orderId = String(order["id"]);
   if (order["printful_order_id"]) {
     return { paid: true, orderId, status: "fulfilling" as const };
   }
-  if (session.payment_status !== "paid") {
-    return { paid: false, orderId, status: "pending" as const };
+
+  let remote = await paypalRequest<PaypalOrder>(`/v2/checkout/orders/${paypalOrderId}`);
+
+  if (remote.status === "APPROVED" || remote.status === "SAVED") {
+    try {
+      remote = await paypalRequest<PaypalOrder>(
+        `/v2/checkout/orders/${paypalOrderId}/capture`,
+        { method: "POST", body: {}, requestId: `cap-${orderId}` },
+      );
+    } catch (err) {
+      // A concurrent caller may have captured first; re-read before failing.
+      const message = err instanceof Error ? err.message : "";
+      if (!message.includes("ORDER_ALREADY_CAPTURED")) throw err;
+      remote = await paypalRequest<PaypalOrder>(`/v2/checkout/orders/${paypalOrderId}`);
+    }
   }
 
-  const total = (session.amount_total ?? 0) / 100;
-  const tax = (session.total_details?.amount_tax ?? 0) / 100;
-  const shipping = (session.total_details?.amount_shipping ?? 0) / 100;
+  const capture = remote.purchase_units?.[0]?.payments?.captures?.[0];
+  const paid = remote.status === "COMPLETED" && capture?.status === "COMPLETED";
+  if (!paid) return { paid: false, orderId, status: "pending" as const };
+
+  const amount = Number(capture?.amount?.value ?? remote.purchase_units?.[0]?.amount?.value ?? 0);
 
   await backend.updateOrder(orderId, {
     payment_status: "paid",
     status: "paid",
-    amount_paid: total,
-    total,
-    tax,
-    shipping_cost: shipping,
-    currency: (session.currency ?? "usd").toUpperCase(),
+    amount_paid: amount,
+    total: amount,
+    currency: (capture?.amount?.currency_code ?? "USD").toUpperCase(),
   });
 
   try {
