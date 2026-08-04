@@ -331,13 +331,12 @@ function CheckoutPage() {
 
           <button
             type="submit"
-            disabled={placing}
             className="mt-6 w-full rounded-md bg-brand py-3 text-sm font-semibold text-brand-foreground hover:opacity-90 disabled:opacity-60"
           >
-            {placing ? "Starting payment…" : "Continue to payment"}
+            Continue to payment
           </button>
           <p className="mt-3 text-xs text-muted-foreground">
-            Payments are processed securely by Stripe. Your order goes into production as soon as
+            Payments are processed securely by PayPal. Your order goes into production as soon as
             payment is confirmed.
           </p>
         </aside>
@@ -346,10 +345,41 @@ function CheckoutPage() {
   );
 }
 
-function PaymentStep({ clientSecret, onBack }: { clientSecret: string; onBack: () => void }) {
-  // Stable identity: a new fetcher on each render would remount the provider.
-  const fetchClientSecret = useCallback(async () => clientSecret, [clientSecret]);
-  const options = useMemo(() => ({ fetchClientSecret }), [fetchClientSecret]);
+interface PaymentStepProps {
+  recipient: typeof emptyForm;
+  items: Array<{
+    handle: string;
+    title: string;
+    sku: string;
+    variantLabel: string;
+    price: number;
+    quantity: number;
+  }>;
+  shippingMethod: string;
+  total: number;
+  onBack: () => void;
+}
+
+function PaymentStep({ recipient, items, shippingMethod, total, onBack }: PaymentStepProps) {
+  const loadConfig = useServerFn(getPaypalConfig);
+  const startCheckout = useServerFn(createCheckoutSession);
+  const finalize = useServerFn(completeCheckout);
+  const navigate = useNavigate();
+  const { clear } = useCart();
+
+  const [clientId, setClientId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    loadConfig({})
+      .then((c) => active && setClientId(c.clientId))
+      .catch(() => active && setError("PayPal is not configured yet."));
+    return () => {
+      active = false;
+    };
+  }, [loadConfig]);
 
   return (
     <div className="mx-auto max-w-[900px] px-6 lg:px-10 py-12">
@@ -364,10 +394,52 @@ function PaymentStep({ clientSecret, onBack }: { clientSecret: string; onBack: (
           Back to details
         </button>
       </div>
-      <div id="checkout" className="rounded-md border border-border p-2">
-        <EmbeddedCheckoutProvider stripe={getStripe()} options={options}>
-          <EmbeddedCheckout />
-        </EmbeddedCheckoutProvider>
+      <div id="checkout" className="rounded-md border border-border p-6">
+        <div className="mb-4 flex justify-between text-sm font-semibold">
+          <span>Total due</span>
+          <span>{formatPrice(total)}</span>
+        </div>
+        {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
+        {status && <p className="mb-4 text-sm text-muted-foreground">{status}</p>}
+        {clientId ? (
+          <PayPalScriptProvider
+            options={{ clientId, currency: "USD", intent: "capture" }}
+          >
+            <PayPalButtons
+              style={{ layout: "vertical", shape: "rect", label: "paypal" }}
+              createOrder={async () => {
+                setError(null);
+                const res = await startCheckout({
+                  data: { recipient, items, shippingMethod },
+                });
+                if ("error" in res) throw new Error(res.error);
+                return res.paypalOrderId;
+              }}
+              onApprove={async (data) => {
+                setStatus("Confirming your payment…");
+                const res = await finalize({ data: { paypalOrderId: data.orderID } });
+                if ("error" in res) {
+                  setError(res.error);
+                  setStatus(null);
+                  return;
+                }
+                if (res.paid && res.orderId) {
+                  clear();
+                  navigate({ to: "/orders/$id", params: { id: res.orderId } });
+                  return;
+                }
+                setStatus(null);
+                setError("Your payment hasn't cleared yet. If you were charged, refresh shortly.");
+              }}
+              onError={(err) => {
+                setStatus(null);
+                setError(err instanceof Error ? err.message : "PayPal could not process that payment.");
+              }}
+            />
+          </PayPalScriptProvider>
+        ) : (
+          !error && <p className="text-sm text-muted-foreground">Loading PayPal…</p>
+        )}
       </div>
     </div>
   );
