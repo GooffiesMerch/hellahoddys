@@ -2,12 +2,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { completeCheckout } from "@/lib/payments.functions";
-import { getStripeEnvironment } from "@/lib/stripe";
 import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/checkout/return")({
-  validateSearch: (search: Record<string, unknown>): { session_id?: string } => ({
-    session_id: typeof search.session_id === "string" ? search.session_id : undefined,
+  validateSearch: (search: Record<string, unknown>): { token?: string } => ({
+    token: typeof search.token === "string" ? search.token : undefined,
   }),
   head: () => ({
     meta: [
@@ -20,7 +19,7 @@ export const Route = createFileRoute("/checkout/return")({
 });
 
 function CheckoutReturn() {
-  const { session_id: sessionId } = Route.useSearch();
+  const { token: paypalOrderId } = Route.useSearch();
   const finalize = useServerFn(completeCheckout);
   const navigate = useNavigate();
   const { clear } = useCart();
@@ -30,13 +29,13 @@ function CheckoutReturn() {
   useEffect(() => {
     if (ran.current) return;
     ran.current = true;
-    if (!sessionId) {
-      setMessage("We couldn't find that checkout session.");
+    if (!paypalOrderId) {
+      setMessage("We couldn't find that PayPal order.");
       return;
     }
     (async () => {
       try {
-        const res = await finalize({ data: { sessionId, environment: getStripeEnvironment() } });
+        const res = await finalize({ data: { paypalOrderId } });
         if ("error" in res) {
           setMessage(res.error);
           return;
@@ -53,7 +52,7 @@ function CheckoutReturn() {
         setMessage(err instanceof Error ? err.message : "Could not confirm your payment.");
       }
     })();
-  }, [sessionId, finalize, navigate, clear]);
+  }, [paypalOrderId, finalize, navigate, clear]);
 
   return (
     <div className="mx-auto max-w-[700px] px-6 py-24 text-center">
