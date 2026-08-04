@@ -16,12 +16,16 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
+import { Route as ShopCategoryRouteImport } from './routes/shop.$category'
 import { Route as ProductsHandleRouteImport } from './routes/products.$handle'
 import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AdminPrintfulRouteImport } from './routes/admin.printful'
+import { Route as ShopCategoryIndexRouteImport } from './routes/shop.$category.index'
+import { Route as ShopCategorySubRouteImport } from './routes/shop.$category.$sub'
 import { Route as ApiPublicPrintfulWebhookRouteImport } from './routes/api/public/printful-webhook'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -59,10 +63,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopIndexRoute = ShopIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShopRoute,
+} as any)
 const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => CollectionsRoute,
+} as any)
+const ShopCategoryRoute = ShopCategoryRouteImport.update({
+  id: '/$category',
+  path: '/$category',
+  getParentRoute: () => ShopRoute,
 } as any)
 const ProductsHandleRoute = ProductsHandleRouteImport.update({
   id: '/products/$handle',
@@ -89,6 +103,16 @@ const AdminPrintfulRoute = AdminPrintfulRouteImport.update({
   path: '/admin/printful',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopCategoryIndexRoute = ShopCategoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShopCategoryRoute,
+} as any)
+const ShopCategorySubRoute = ShopCategorySubRouteImport.update({
+  id: '/$sub',
+  path: '/$sub',
+  getParentRoute: () => ShopCategoryRoute,
+} as any)
 const ApiPublicPrintfulWebhookRoute =
   ApiPublicPrintfulWebhookRouteImport.update({
     id: '/api/public/printful-webhook',
@@ -102,22 +126,25 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/collections': typeof CollectionsRouteWithChildren
-  '/shop': typeof ShopRoute
+  '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/printful': typeof AdminPrintfulRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/orders/$id': typeof OrdersIdRoute
   '/products/$handle': typeof ProductsHandleRoute
+  '/shop/$category': typeof ShopCategoryRouteWithChildren
   '/collections/': typeof CollectionsIndexRoute
+  '/shop/': typeof ShopIndexRoute
   '/api/public/printful-webhook': typeof ApiPublicPrintfulWebhookRoute
+  '/shop/$category/$sub': typeof ShopCategorySubRoute
+  '/shop/$category/': typeof ShopCategoryIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
-  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/printful': typeof AdminPrintfulRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -125,7 +152,10 @@ export interface FileRoutesByTo {
   '/orders/$id': typeof OrdersIdRoute
   '/products/$handle': typeof ProductsHandleRoute
   '/collections': typeof CollectionsIndexRoute
+  '/shop': typeof ShopIndexRoute
   '/api/public/printful-webhook': typeof ApiPublicPrintfulWebhookRoute
+  '/shop/$category/$sub': typeof ShopCategorySubRoute
+  '/shop/$category': typeof ShopCategoryIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,15 +164,19 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/collections': typeof CollectionsRouteWithChildren
-  '/shop': typeof ShopRoute
+  '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/printful': typeof AdminPrintfulRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/orders/$id': typeof OrdersIdRoute
   '/products/$handle': typeof ProductsHandleRoute
+  '/shop/$category': typeof ShopCategoryRouteWithChildren
   '/collections/': typeof CollectionsIndexRoute
+  '/shop/': typeof ShopIndexRoute
   '/api/public/printful-webhook': typeof ApiPublicPrintfulWebhookRoute
+  '/shop/$category/$sub': typeof ShopCategorySubRoute
+  '/shop/$category/': typeof ShopCategoryIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,15 +193,18 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/orders/$id'
     | '/products/$handle'
+    | '/shop/$category'
     | '/collections/'
+    | '/shop/'
     | '/api/public/printful-webhook'
+    | '/shop/$category/$sub'
+    | '/shop/$category/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/cart'
     | '/checkout'
-    | '/shop'
     | '/sitemap.xml'
     | '/admin/printful'
     | '/checkout/return'
@@ -175,7 +212,10 @@ export interface FileRouteTypes {
     | '/orders/$id'
     | '/products/$handle'
     | '/collections'
+    | '/shop'
     | '/api/public/printful-webhook'
+    | '/shop/$category/$sub'
+    | '/shop/$category'
   id:
     | '__root__'
     | '/'
@@ -190,8 +230,12 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/orders/$id'
     | '/products/$handle'
+    | '/shop/$category'
     | '/collections/'
+    | '/shop/'
     | '/api/public/printful-webhook'
+    | '/shop/$category/$sub'
+    | '/shop/$category/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -200,7 +244,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CollectionsRoute: typeof CollectionsRouteWithChildren
-  ShopRoute: typeof ShopRoute
+  ShopRoute: typeof ShopRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AdminPrintfulRoute: typeof AdminPrintfulRoute
   OrdersIdRoute: typeof OrdersIdRoute
@@ -259,12 +303,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop/': {
+      id: '/shop/'
+      path: '/'
+      fullPath: '/shop/'
+      preLoaderRoute: typeof ShopIndexRouteImport
+      parentRoute: typeof ShopRoute
+    }
     '/collections/': {
       id: '/collections/'
       path: '/'
       fullPath: '/collections/'
       preLoaderRoute: typeof CollectionsIndexRouteImport
       parentRoute: typeof CollectionsRoute
+    }
+    '/shop/$category': {
+      id: '/shop/$category'
+      path: '/$category'
+      fullPath: '/shop/$category'
+      preLoaderRoute: typeof ShopCategoryRouteImport
+      parentRoute: typeof ShopRoute
     }
     '/products/$handle': {
       id: '/products/$handle'
@@ -300,6 +358,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/printful'
       preLoaderRoute: typeof AdminPrintfulRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/shop/$category/': {
+      id: '/shop/$category/'
+      path: '/'
+      fullPath: '/shop/$category/'
+      preLoaderRoute: typeof ShopCategoryIndexRouteImport
+      parentRoute: typeof ShopCategoryRoute
+    }
+    '/shop/$category/$sub': {
+      id: '/shop/$category/$sub'
+      path: '/$sub'
+      fullPath: '/shop/$category/$sub'
+      preLoaderRoute: typeof ShopCategorySubRouteImport
+      parentRoute: typeof ShopCategoryRoute
     }
     '/api/public/printful-webhook': {
       id: '/api/public/printful-webhook'
@@ -337,13 +409,39 @@ const CollectionsRouteWithChildren = CollectionsRoute._addFileChildren(
   CollectionsRouteChildren,
 )
 
+interface ShopCategoryRouteChildren {
+  ShopCategorySubRoute: typeof ShopCategorySubRoute
+  ShopCategoryIndexRoute: typeof ShopCategoryIndexRoute
+}
+
+const ShopCategoryRouteChildren: ShopCategoryRouteChildren = {
+  ShopCategorySubRoute: ShopCategorySubRoute,
+  ShopCategoryIndexRoute: ShopCategoryIndexRoute,
+}
+
+const ShopCategoryRouteWithChildren = ShopCategoryRoute._addFileChildren(
+  ShopCategoryRouteChildren,
+)
+
+interface ShopRouteChildren {
+  ShopCategoryRoute: typeof ShopCategoryRouteWithChildren
+  ShopIndexRoute: typeof ShopIndexRoute
+}
+
+const ShopRouteChildren: ShopRouteChildren = {
+  ShopCategoryRoute: ShopCategoryRouteWithChildren,
+  ShopIndexRoute: ShopIndexRoute,
+}
+
+const ShopRouteWithChildren = ShopRoute._addFileChildren(ShopRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   CollectionsRoute: CollectionsRouteWithChildren,
-  ShopRoute: ShopRoute,
+  ShopRoute: ShopRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AdminPrintfulRoute: AdminPrintfulRoute,
   OrdersIdRoute: OrdersIdRoute,
