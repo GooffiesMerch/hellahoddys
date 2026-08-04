@@ -1,12 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useCallback, useMemo, useState } from "react";
-import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
+import { useEffect, useState } from "react";
+import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { useNavigate } from "@tanstack/react-router";
 import { cartItemKey, useCart } from "@/lib/cart";
 import { formatPrice } from "@/lib/products";
 import { getShippingRates } from "@/lib/printful.functions";
-import { createCheckoutSession } from "@/lib/payments.functions";
-import { getStripe, getStripeEnvironment } from "@/lib/stripe";
+import {
+  completeCheckout,
+  createCheckoutSession,
+  getPaypalConfig,
+} from "@/lib/payments.functions";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
 const COUNTRIES: Array<{ code: string; name: string }> = [
