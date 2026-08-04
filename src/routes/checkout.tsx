@@ -115,9 +115,8 @@ function CheckoutPage() {
   const [rates, setRates] = useState<Rate[]>([]);
   const [shippingMethod, setShippingMethod] = useState<string>("");
   const [loadingRates, setLoadingRates] = useState(false);
-  const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [payStep, setPayStep] = useState(false);
 
   const lines = items.map((i) => ({
     handle: i.handle,
@@ -163,28 +162,10 @@ function CheckoutPage() {
     }
   }
 
-  async function onPlace(e: React.FormEvent) {
+  function onPlace(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setPlacing(true);
-    try {
-      const res = await startCheckout({
-        data: {
-          recipient: form,
-          items: lines,
-          shippingMethod: shippingMethod || "STANDARD",
-          returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
-          environment: getStripeEnvironment(),
-        },
-      });
-      if ("error" in res) throw new Error(res.error);
-      if (!res.clientSecret) throw new Error("Stripe did not return a checkout session.");
-      setClientSecret(res.clientSecret);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not start payment.");
-    } finally {
-      setPlacing(false);
-    }
+    setPayStep(true);
   }
 
   if (items.length === 0) {
@@ -199,8 +180,16 @@ function CheckoutPage() {
   const selected = rates.find((r) => r.id === shippingMethod);
   const shippingCost = selected ? Number(selected.rate) : 0;
 
-  if (clientSecret) {
-    return <PaymentStep clientSecret={clientSecret} onBack={() => setClientSecret(null)} />;
+  if (payStep) {
+    return (
+      <PaymentStep
+        recipient={form}
+        items={lines}
+        shippingMethod={shippingMethod || "STANDARD"}
+        total={subtotal + shippingCost}
+        onBack={() => setPayStep(false)}
+      />
+    );
   }
 
   return (
