@@ -66,7 +66,15 @@ const HOLIDAY = [
 ];
 
 const isSoccer = (t: string) => word(t.replace(/new england|n england/g, ""), SOCCER);
-const isBasketball = (t: string) => word(t, NBA) || has(t, BASKETBALL_WORDS);
+const NBA_CITIES = [
+  "boston", "brooklyn", "philadelphia", "philly", "toronto", "chicago", "cleveland",
+  "detroit", "indiana", "indianapolis", "milwaukee", "atlanta", "charlotte", "miami",
+  "orlando", "denver", "minnesota", "minneapolis", "oklahoma city", "okc", "portland",
+  "utah", "salt lake", "golden state", "phoenix", "sacramento", "dallas", "houston",
+  "memphis", "new orleans", "san antonio",
+];
+const isBasketball = (t: string) =>
+  word(t, NBA) || has(t, BASKETBALL_WORDS) || word(t, NBA_CITIES);
 const isBaseball = (t: string) => word(t, MLB) || has(t, BASEBALL_WORDS);
 const isFootball = (t: string) => word(t, NFL) || has(t, FOOTBALL_WORDS);
 
@@ -110,7 +118,7 @@ export const categories: Category[] = [
     slug: "basketball",
     name: "Basketball",
     tagline: "Hardwood heat, off-court fits.",
-    match: (t) => isBasketball(t) && !isFootball(t) && !isSoccer(t),
+    match: (t) => isBasketball(t) && !isFootball(t) && !isSoccer(t) && !isBaseball(t),
     subs: [
       { slug: "nba", name: "NBA", match: (t) => !isCollege(t) && !isHS(t) && !isWomen(t) },
       { slug: "wnba", name: "WNBA", match: (t) => !isCollege(t) && !isHS(t) && isWomen(t) },
