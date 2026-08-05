@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { useNavigate } from "@tanstack/react-router";
 import { cartItemKey, useCart } from "@/lib/cart";
@@ -370,6 +370,8 @@ function PaymentStep({ recipient, items, shippingMethod, total, onBack }: Paymen
   const [clientId, setClientId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  // Re-opening the PayPal window must not create a second order every click.
+  const created = useRef<{ signature: string; paypalOrderId: string } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -409,10 +411,15 @@ function PaymentStep({ recipient, items, shippingMethod, total, onBack }: Paymen
               style={{ layout: "vertical", shape: "rect", label: "paypal" }}
               createOrder={async () => {
                 setError(null);
+                const signature = JSON.stringify({ recipient, items, shippingMethod });
+                if (created.current?.signature === signature) {
+                  return created.current.paypalOrderId;
+                }
                 const res = await startCheckout({
                   data: { recipient, items, shippingMethod },
                 });
                 if ("error" in res) throw new Error(res.error);
+                created.current = { signature, paypalOrderId: res.paypalOrderId };
                 return res.paypalOrderId;
               }}
               onApprove={async (data) => {
