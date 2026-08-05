@@ -31,8 +31,13 @@ export async function createCheckout(input: {
   shippingMethod: string;
 }) {
   const { lines, unmatched } = await repriceItems(input.items);
-  if (unmatched.length === lines.length) {
-    throw new Error("These items are not available for fulfillment right now.");
+  // Any line we can't match to a live Printful variant has no trustworthy
+  // price and could not be fulfilled, so refuse the whole checkout instead of
+  // charging the price the browser sent.
+  if (unmatched.length > 0) {
+    throw new Error(
+      `These items are no longer available for fulfillment: ${unmatched.join(", ")}. Remove them from your bag and try again.`,
+    );
   }
 
   let shippingCost = 0;

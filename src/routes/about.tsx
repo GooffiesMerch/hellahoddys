@@ -4,7 +4,7 @@ export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "About — Hella Hoodys" },
-      { name: "description", content: "Hella Hoodys is making urban streetwear accessible to everyone through print-on-demand production and bold, fan-first design." },
+      { name: "description", content: "Hella Hoodys is making urban streetwear accessible to everyone through made-to-order production and bold, fan-first design." },
       { property: "og:title", content: "About — Hella Hoodys" },
       { property: "og:description", content: "Making urban streetwear accessible to everyone." },
       { property: "og:type", content: "website" },
@@ -108,7 +108,7 @@ function About() {
             <ValueCard
               number="05"
               title="Worldwide shipping"
-              description="No matter where you rep your team, we ship to you. Our print-on-demand network delivers across the globe."
+              description="No matter where you rep your team, we ship to you. Our made-to-order network delivers across the globe."
             />
             <ValueCard
               number="06"
@@ -125,7 +125,7 @@ function About() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">How it works</p>
           <h2 className="mt-3 text-3xl font-black tracking-tight">From order to doorstep.</h2>
           <p className="mt-4 text-muted-foreground">
-            Print-on-demand means we only make what you buy. No warehouses, no waste, no waiting for a restock.
+            Made to order means we only make what you buy. No warehouses, no waste, no waiting for a restock.
           </p>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

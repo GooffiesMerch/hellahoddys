@@ -15,7 +15,7 @@ export const Route = createFileRoute("/products/$handle")({
       return { meta: [{ title: "Product not found — Hella Hoodys" }, { name: "robots", content: "noindex" }] };
     }
     const { product } = loaderData;
-    const desc = `${product.title} — print-on-demand streetwear from Hella Hoodys. ${priceRange(product)}.`;
+    const desc = `${product.title} — made-to-order streetwear from Hella Hoodys. ${priceRange(product)}.`;
     const image = product.images[0];
     return {
       meta: [
