@@ -289,7 +289,6 @@ async function ratesFor(
   unmatched: string[],
   storeId: number | null,
 ) {
-  const { printfulItems, unmatched, storeId } = await buildPrintfulItems(items);
   if (printfulItems.length === 0) {
     return {
       rates: [] as Array<{
