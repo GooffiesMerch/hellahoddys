@@ -10,6 +10,7 @@ export interface ShippingRate {
   id?: string;
   shipping?: string;
   name?: string;
+  shipping_method_name?: string;
   rate?: string | number;
   currency?: string;
   minDeliveryDays?: number;
@@ -269,6 +270,18 @@ export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
     };
   }
 
+  // Printful's v2 shipping-rates endpoint only accepts catalog/warehouse/
+  // product_template items — a sync_variant_id is rejected — so each cart line
+  // is resolved to its underlying catalog variant first.
+  const catalogItems = await Promise.all(
+    printfulItems.map(async (i) => ({
+      catalogVariantId: await catalogVariantId(i.sync_variant_id, storeId),
+      quantity: i.quantity,
+    })),
+  );
+  const usable = catalogItems.filter((i) => i.catalogVariantId != null);
+  if (usable.length === 0) return { rates: [], unmatched };
+
   const res = await printful<{ data: ShippingRate[] }>("/v2/shipping-rates", {
     method: "POST",
     body: JSON.stringify({
@@ -279,9 +292,9 @@ export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
         state_code: recipient.state_code || undefined,
         zip: recipient.zip,
       },
-      order_items: printfulItems.map((i) => ({
-        source: "sync_product",
-        sync_variant_id: i.sync_variant_id,
+      order_items: usable.map((i) => ({
+        source: "catalog",
+        catalog_variant_id: i.catalogVariantId,
         quantity: i.quantity,
       })),
       currency: "USD",
@@ -291,7 +304,7 @@ export async function shippingRates(recipient: Recipient, items: OrderLine[]) {
 
   const rates = (res?.data ?? []).map((r) => ({
     id: r.id ?? r.shipping ?? "STANDARD",
-    name: r.name ?? "Standard",
+    name: r.shipping_method_name ?? r.name ?? "Standard",
     rate: String(r.rate ?? "0"),
     currency: r.currency ?? "USD",
     minDeliveryDays: r.minDeliveryDays ?? r.min_delivery_days,
