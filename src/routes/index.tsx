@@ -12,8 +12,12 @@ export const Route = createFileRoute("/")({
 function Index() {
   const products = useCatalog();
   const isExcluded = (p: Product) =>
-    /hella\s+(ak|arkansas|fl\s+state|ks|spain\s+champions|jacksonville(\s+version\s+2)?)\s+unisex(\s+zip)?\s+hood/i.test(p.title) ||
-    /jacksonville(\s+version\s+2)?\s+unisex(\s+zip)?\s+hood/i.test(p.title);
+    [
+      /hella\s+(ak|arkansas|fl\s+state|ks)\s+unisex(\s+zip)?\s+hood/i,
+      /hella\s+spain\s+champions/i,
+      /hella\s+jacksonville(\s+version\s+2)?\s+unisex(\s+zip)?\s+hood/i,
+      /jacksonville(\s+version\s+2)?\s+unisex(\s+zip)?\s+hood/i,
+    ].some((r) => r.test(p.title));
   const featured = products.filter((p) => p.images.length > 0 && !isExcluded(p)).slice(0, 8);
   const withImages = products.filter((p) => p.images.length > 0);
   const heroImages = [
