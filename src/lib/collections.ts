@@ -119,7 +119,7 @@ export const collections: Collection[] = [
     slug: "basketball",
     name: "Basketball",
     tagline: "Hardwood heat, off-court fits.",
-    comingSoon: true,
+    coverHandle: "hella-nyk-2-unisex-hoodie",
     match: (p) => {
       const t = text(p);
       if (hasWord(t, BASKETBALL)) return true;
