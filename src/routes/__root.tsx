@@ -185,7 +185,7 @@ function SiteHeader() {
   return (
     <>
       <div className="bg-footer py-2 text-center text-xs font-medium uppercase tracking-[0.2em] text-footer-foreground">
-        Free shipping on orders over $75 · <span className="text-brand">It's always HOODY season</span>
+        Free shipping on all U.S orders · <span className="text-brand">It's always HOODY season</span>
       </div>
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 lg:px-10 py-4">
