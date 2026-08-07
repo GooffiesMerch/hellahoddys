@@ -7,9 +7,9 @@ export const Route = createFileRoute("/collections/")({
   head: () => ({
     meta: [
       { title: "Collections — Hella Hoodys" },
-      { name: "description", content: "Shop Hella Hoodys collections by game: NCAA college football, NFL, baseball, Greek life, Valentine's, and street." },
+      { name: "description", content: "Shop Hella Hoodys collections by sports league: NCAA college football, NFL, baseball, Greek life, Valentine's, and street." },
       { property: "og:title", content: "Collections — Hella Hoodys" },
-      { property: "og:description", content: "Shop by game: NCAA, NFL, MLB, Greek life, and more." },
+      { property: "og:description", content: "Shop by sports league: NCAA, NFL, MLB, Greek life, and more." },
     ],
   }),
   component: CollectionsIndex,
@@ -34,7 +34,7 @@ function CollectionsIndex() {
           <div className="mt-5 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
               <h1 className="text-5xl font-black leading-[1.02] tracking-tight sm:text-6xl xl:text-7xl">
-                Pick your <span className="text-brand">league.</span>
+                Shop by sports league.
               </h1>
               <p className="mt-4 max-w-xl text-lg text-muted-foreground">
                 Every drop, organized by the game it reps. From Saturday campuses to Sunday kickoffs — find your fit.
