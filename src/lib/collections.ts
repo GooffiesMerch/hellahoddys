@@ -178,8 +178,14 @@ export function productsIn(slug: string, catalog: Product[] = products): Product
 }
 
 export function collectionCover(slug: string, catalog: Product[] = products): string | undefined {
+  const c = getCollection(slug);
+  if (c?.coverHandle) {
+    const forced = getProduct(c.coverHandle) ?? catalog.find((p) => p.handle === c.coverHandle);
+    if (forced?.images[0]) return forced.images[0];
+  }
   return productsIn(slug, catalog)[0]?.images[0];
 }
+
 
 export function collectionCount(slug: string, catalog: Product[] = products): number {
   return productsIn(slug, catalog).length;
