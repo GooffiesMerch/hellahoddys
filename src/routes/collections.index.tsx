@@ -115,8 +115,8 @@ function CollectionsIndex() {
               >
                 <div className="relative aspect-[5/4] overflow-hidden bg-brand/10">
                   {c.comingSoon || count === 0 ? (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <span className="text-sm font-bold uppercase tracking-[0.3em] text-brand">Coming Soon</span>
+                    <div className="flex h-full w-full items-center justify-center bg-muted">
+                      <span className="text-sm font-black uppercase tracking-[0.3em] text-foreground">Coming Soon</span>
                     </div>
                   ) : cover ? (
                     <img
