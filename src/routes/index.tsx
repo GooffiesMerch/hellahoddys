@@ -156,9 +156,8 @@ function Index() {
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {collections.map((c) => {
-              const cover = collectionCover(c.slug);
+              const cover = c.comingSoon ? undefined : collectionCover(c.slug);
               const count = collectionCount(c.slug);
-              if (!cover) return null;
               return (
                 <Link
                   key={c.slug}
@@ -166,16 +165,22 @@ function Index() {
                   params={{ slug: c.slug }}
                   className="group relative block aspect-[4/5] overflow-hidden rounded-md bg-muted"
                 >
-                  <img
-                    src={cover}
-                    alt={c.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
+                  {cover ? (
+                    <img
+                      src={cover}
+                      alt={c.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-muted">
+                      <span className="text-lg font-black uppercase tracking-[0.3em] text-foreground">Coming Soon</span>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">
-                      {count} drops
+                      {c.comingSoon ? "Coming soon" : `${count} drops`}
                     </p>
                     <p className="mt-1 text-lg font-bold">{c.name}</p>
                     <p className="mt-1 text-sm text-white/80">{c.tagline}</p>
