@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { priceRange } from "@/lib/products";
+import { priceRange, type Product } from "@/lib/products";
 import { useCatalog } from "@/lib/catalog";
 import { collections, collectionCover, collectionCount } from "@/lib/collections";
 import { RankingsTicker } from "@/components/RankingsTicker";
