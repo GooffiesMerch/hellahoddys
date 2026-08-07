@@ -34,7 +34,7 @@ function CollectionsIndex() {
           <div className="mt-5 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
               <h1 className="text-5xl font-black leading-[1.02] tracking-tight sm:text-6xl xl:text-7xl">
-                Pick your <span className="text-brand">league.</span>
+                Shop by sports league.
               </h1>
               <p className="mt-4 max-w-xl text-lg text-muted-foreground">
                 Every drop, organized by the game it reps. From Saturday campuses to Sunday kickoffs — find your fit.
