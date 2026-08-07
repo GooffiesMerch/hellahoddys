@@ -275,6 +275,10 @@ export type Database = {
         Args: { p_secret: string; p_session_id: string }
         Returns: Json
       }
+      backend_list_orders: {
+        Args: { p_limit?: number; p_secret: string }
+        Returns: Json
+      }
       backend_list_webhook_logs: {
         Args: { p_limit?: number; p_secret: string }
         Returns: Json
