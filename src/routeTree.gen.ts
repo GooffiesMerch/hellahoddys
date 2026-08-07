@@ -24,6 +24,7 @@ import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AdminPrintfulRouteImport } from './routes/admin.printful'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as ShopCategoryIndexRouteImport } from './routes/shop.$category.index'
 import { Route as ShopCategorySubRouteImport } from './routes/shop.$category.$sub'
 import { Route as ApiPublicPrintfulWebhookRouteImport } from './routes/api/public/printful-webhook'
@@ -104,6 +105,11 @@ const AdminPrintfulRoute = AdminPrintfulRouteImport.update({
   path: '/admin/printful',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/admin/orders',
+  path: '/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopCategoryIndexRoute = ShopCategoryIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/collections': typeof CollectionsRouteWithChildren
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/printful': typeof AdminPrintfulRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -154,6 +161,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/printful': typeof AdminPrintfulRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/collections': typeof CollectionsRouteWithChildren
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/printful': typeof AdminPrintfulRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/collections'
     | '/shop'
     | '/sitemap.xml'
+    | '/admin/orders'
     | '/admin/printful'
     | '/checkout/return'
     | '/collections/$slug'
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/sitemap.xml'
+    | '/admin/orders'
     | '/admin/printful'
     | '/checkout/return'
     | '/collections/$slug'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/collections'
     | '/shop'
     | '/sitemap.xml'
+    | '/admin/orders'
     | '/admin/printful'
     | '/checkout/return'
     | '/collections/$slug'
@@ -259,6 +271,7 @@ export interface RootRouteChildren {
   CollectionsRoute: typeof CollectionsRouteWithChildren
   ShopRoute: typeof ShopRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPrintfulRoute: typeof AdminPrintfulRoute
   OrdersIdRoute: typeof OrdersIdRoute
   ProductsHandleRoute: typeof ProductsHandleRoute
@@ -373,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPrintfulRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop/$category/': {
       id: '/shop/$category/'
       path: '/'
@@ -464,6 +484,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollectionsRoute: CollectionsRouteWithChildren,
   ShopRoute: ShopRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
   AdminPrintfulRoute: AdminPrintfulRoute,
   OrdersIdRoute: OrdersIdRoute,
   ProductsHandleRoute: ProductsHandleRoute,
@@ -473,13 +494,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
