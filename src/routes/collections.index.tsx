@@ -7,9 +7,9 @@ export const Route = createFileRoute("/collections/")({
   head: () => ({
     meta: [
       { title: "Collections — Hella Hoodys" },
-      { name: "description", content: "Shop Hella Hoodys collections by game: NCAA college football, NFL, baseball, Greek life, Valentine's, and street." },
+      { name: "description", content: "Shop Hella Hoodys collections by sports league: NCAA college football, NFL, baseball, Greek life, Valentine's, and street." },
       { property: "og:title", content: "Collections — Hella Hoodys" },
-      { property: "og:description", content: "Shop by game: NCAA, NFL, MLB, Greek life, and more." },
+      { property: "og:description", content: "Shop by sports league: NCAA, NFL, MLB, Greek life, and more." },
     ],
   }),
   component: CollectionsIndex,
