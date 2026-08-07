@@ -87,7 +87,7 @@ export const collections: Collection[] = [
     slug: "nfl-football",
     name: "NFL Football",
     tagline: "All 32 franchises. Sunday fits, every city.",
-    coverHandle: "hella-houston-unisex-hoodie-5",
+    coverHandle: "hella-dallas-unisex-hoodie-2",
     match: (p) => {
       const t = text(p);
       if (t.includes("nfl")) return true;
