@@ -72,6 +72,26 @@ export interface OrderSummary {
   created_at: string;
 }
 
+export interface AdminOrderRow {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  status: string;
+  payment_status: string;
+  email: string;
+  amount_paid: number;
+  total: number;
+  subtotal: number;
+  shipping_cost: number;
+  tax: number;
+  currency: string;
+  paypal_order_id: string | null;
+  printful_order_id: number | null;
+  tracking_number: string | null;
+  tracking_url: string | null;
+  carrier: string | null;
+}
+
 export interface WebhookLogRow {
   id: string;
   event_type: string | null;
@@ -128,6 +148,8 @@ export const backend = {
       p_printful_order_id: entry.printfulOrderId,
       p_payload: entry.payload ?? null,
     }),
+  listOrders: (limit = 100) =>
+    rpc("backend_list_orders", { p_limit: limit }) as Promise<AdminOrderRow[]>,
   listWebhookLogs: (limit = 100) =>
     rpc("backend_list_webhook_logs", { p_limit: limit }) as Promise<WebhookLogRow[]>,
   /** Returns true when the event is new, false when it is a replay. */
