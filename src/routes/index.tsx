@@ -157,7 +157,7 @@ function Index() {
           <div className="mb-10 flex items-end justify-between">
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Collections</p>
-              <h2 className="text-3xl font-black tracking-tight">Shop by game</h2>
+              <h2 className="text-3xl font-black tracking-tight">Shop by sports league</h2>
             </div>
             <Link to="/collections" className="text-sm font-medium hover:underline">All collections →</Link>
           </div>
