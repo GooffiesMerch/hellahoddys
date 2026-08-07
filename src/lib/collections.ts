@@ -1,13 +1,16 @@
-import { products, type Product } from "./products";
+import { products, getProduct, type Product } from "./products";
 
 export interface Collection {
   slug: string;
   name: string;
   tagline: string;
   match: (p: Product) => boolean;
+  /** explicit product handle to use as the collection cover image */
+  coverHandle?: string;
   /** show a "Coming soon" placeholder instead of covers/counts */
   comingSoon?: boolean;
 }
+
 
 const text = (p: Product) => (p.title + " " + p.tags + " " + p.type).toLowerCase();
 const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
@@ -84,6 +87,7 @@ export const collections: Collection[] = [
     slug: "nfl-football",
     name: "NFL Football",
     tagline: "All 32 franchises. Sunday fits, every city.",
+    coverHandle: "hella-houston-unisex-hoodie-5",
     match: (p) => {
       const t = text(p);
       if (t.includes("nfl")) return true;
@@ -92,6 +96,7 @@ export const collections: Collection[] = [
       return has(t, NFL_TEAMS);
     },
   },
+
   {
     slug: "college-football",
     name: "College Football",
@@ -173,8 +178,14 @@ export function productsIn(slug: string, catalog: Product[] = products): Product
 }
 
 export function collectionCover(slug: string, catalog: Product[] = products): string | undefined {
+  const c = getCollection(slug);
+  if (c?.coverHandle) {
+    const forced = getProduct(c.coverHandle) ?? catalog.find((p) => p.handle === c.coverHandle);
+    if (forced?.images[0]) return forced.images[0];
+  }
   return productsIn(slug, catalog)[0]?.images[0];
 }
+
 
 export function collectionCount(slug: string, catalog: Product[] = products): number {
   return productsIn(slug, catalog).length;
