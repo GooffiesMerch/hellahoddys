@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { priceRange } from "@/lib/products";
+import { priceRange, type Product } from "@/lib/products";
 import { useCatalog } from "@/lib/catalog";
 import { collections, collectionCover, collectionCount } from "@/lib/collections";
 import { RankingsTicker } from "@/components/RankingsTicker";
@@ -11,7 +11,8 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const products = useCatalog();
-  const featured = products.filter((p) => p.images.length > 0).slice(0, 8);
+  const isExcluded = (p: Product) => /hella\s+ak\s+unisex\s+hoody/i.test(p.title);
+  const featured = products.filter((p) => p.images.length > 0 && !isExcluded(p)).slice(0, 8);
   const withImages = products.filter((p) => p.images.length > 0);
   const heroImages = [
     { src: "/images/hero-wisconsin.webp", alt: "Hella Wisconsin Badgers hoodie" },
