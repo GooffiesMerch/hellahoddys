@@ -131,6 +131,7 @@ export const collections: Collection[] = [
     slug: "baseball",
     name: "Baseball",
     tagline: "Bases loaded. Fits stacked.",
+    coverHandle: "hella-houston-unisex-hoodie",
     match: (p) => {
       const t = text(p);
       if (t.includes("mlb") || t.includes("baseball")) return true;
