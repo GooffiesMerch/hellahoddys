@@ -1,13 +1,16 @@
-import { products, type Product } from "./products";
+import { products, getProduct, type Product } from "./products";
 
 export interface Collection {
   slug: string;
   name: string;
   tagline: string;
   match: (p: Product) => boolean;
+  /** explicit product handle to use as the collection cover image */
+  coverHandle?: string;
   /** show a "Coming soon" placeholder instead of covers/counts */
   comingSoon?: boolean;
 }
+
 
 const text = (p: Product) => (p.title + " " + p.tags + " " + p.type).toLowerCase();
 const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
