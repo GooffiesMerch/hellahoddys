@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { listAdminOrders } from "@/lib/admin.functions";
 import type { AdminOrderRow } from "@/lib/db.server";
 
@@ -47,6 +47,9 @@ function OrdersAdmin() {
   const [rows, setRows] = useState<AdminOrderRow[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [live, setLive] = useState(true);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const passcodeRef = useRef("");
 
   async function run(e?: React.FormEvent) {
     e?.preventDefault();
@@ -55,12 +58,44 @@ function OrdersAdmin() {
     try {
       const res = await load({ data: { passcode, limit: 200 } });
       setRows(res as AdminOrderRow[]);
+      passcodeRef.current = passcode;
+      setLastSync(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load orders.");
     } finally {
       setBusy(false);
     }
   }
+
+  // Background refresh: keeps fulfillment status and tracking current as
+  // Printful webhooks update the orders table. Orders are server-only (RLS
+  // blocks browser reads), so we re-poll the passcode-gated server function.
+  const refresh = useCallback(async () => {
+    if (!passcodeRef.current) return;
+    try {
+      const res = await load({ data: { passcode: passcodeRef.current, limit: 200 } });
+      setRows(res as AdminOrderRow[]);
+      setLastSync(new Date());
+      setError(null);
+    } catch {
+      /* transient: keep showing the last good snapshot */
+    }
+  }, [load]);
+
+  useEffect(() => {
+    if (!live || !rows) return;
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") void refresh();
+    }, 15000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [live, rows, refresh]);
 
   const revenue = (rows ?? [])
     .filter((r) => r.payment_status?.toLowerCase() === "paid")
@@ -88,6 +123,25 @@ function OrdersAdmin() {
         >
           {busy ? "Loading…" : rows ? "Refresh" : "Load orders"}
         </button>
+        {rows && (
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={live}
+              onChange={(e) => setLive(e.target.checked)}
+              className="h-4 w-4 accent-[hsl(var(--brand))]"
+            />
+            <span className="inline-flex items-center gap-1.5">
+              {live && (
+                <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-brand" />
+              )}
+              Live updates
+            </span>
+            {lastSync && (
+              <span className="text-xs">· updated {lastSync.toLocaleTimeString()}</span>
+            )}
+          </label>
+        )}
       </form>
 
       {error && (
