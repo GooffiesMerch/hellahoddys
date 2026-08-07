@@ -29,7 +29,7 @@ function CollectionsIndex() {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-10 py-16 sm:py-20">
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand" />
-            Shop by game
+            Shop by sports league
           </div>
           <div className="mt-5 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
