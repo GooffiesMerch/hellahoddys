@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useState } from "react";
-import { checkPaypalCredentials } from "@/lib/payments.functions";
+import { checkPaypalCredentials, testPaypalCredentials } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/admin/paypal")({
   head: () => ({
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/admin/paypal")({
       { title: "PayPal Credential Check — Hella Hoodys" },
       {
         name: "description",
-        content: "Verify that the PayPal client ID, secret and environment match before checkout.",
+        content: "Verify and update the PayPal client ID, secret and environment before checkout.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -17,21 +17,45 @@ export const Route = createFileRoute("/admin/paypal")({
   component: PaypalCheckPage,
 });
 
-type Result = Awaited<ReturnType<typeof checkPaypalCredentials>>;
+type StoredResult = Awaited<ReturnType<typeof checkPaypalCredentials>>;
+type TestResult = Awaited<ReturnType<typeof testPaypalCredentials>>;
 
 function PaypalCheckPage() {
   const check = useServerFn(checkPaypalCredentials);
-  const [result, setResult] = useState<Result | null>(null);
-  const [loading, setLoading] = useState(true);
+  const test = useServerFn(testPaypalCredentials);
 
-  const run = useCallback(() => {
-    setLoading(true);
+  const [storedResult, setStoredResult] = useState<StoredResult | null>(null);
+  const [storedLoading, setStoredLoading] = useState(true);
+
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [environment, setEnvironment] = useState<"sandbox" | "live">("live");
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
+  const [testLoading, setTestLoading] = useState(false);
+
+  const runStored = useCallback(() => {
+    setStoredLoading(true);
     check({})
-      .then(setResult)
-      .finally(() => setLoading(false));
+      .then(setStoredResult)
+      .finally(() => setStoredLoading(false));
   }, [check]);
 
-  useEffect(run, [run]);
+  useEffect(runStored, [runStored]);
+
+  const handleTest = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setTestLoading(true);
+      setTestResult(null);
+      try {
+        const result = await test({ data: { clientId, clientSecret, environment } });
+        setTestResult(result);
+      } finally {
+        setTestLoading(false);
+      }
+    },
+    [test, clientId, clientSecret, environment],
+  );
 
   return (
     <div className="mx-auto max-w-[760px] px-6 lg:px-10 py-16">
@@ -41,50 +65,135 @@ function PaypalCheckPage() {
       </p>
 
       <div className="mt-8 rounded-md border border-border p-6">
-        {loading && !result ? (
-          <p className="text-sm text-muted-foreground">Checking…</p>
-        ) : result ? (
+        <h2 className="text-sm font-semibold">Stored credentials</h2>
+        {storedLoading && !storedResult ? (
+          <p className="mt-4 text-sm text-muted-foreground">Checking…</p>
+        ) : storedResult ? (
           <>
             <div
-              className={`rounded-md px-4 py-3 text-sm font-semibold ${
-                result.ok
+              className={`mt-4 rounded-md px-4 py-3 text-sm font-semibold ${
+                storedResult.ok
                   ? "bg-primary/10 text-foreground"
                   : "bg-destructive/10 text-destructive"
               }`}
             >
-              {result.ok
-                ? `Credentials are valid in ${result.environment} mode — checkout is ready.`
-                : (result.error ?? "PayPal credentials are not usable.")}
+              {storedResult.ok
+                ? `Credentials are valid in ${storedResult.environment} mode — checkout is ready.`
+                : (storedResult.error ?? "PayPal credentials are not usable.")}
             </div>
             <dl className="mt-6 space-y-3 text-sm">
-              <Item label="PAYPAL_ENV" value={result.environment} />
+              <Item label="PAYPAL_ENV" value={storedResult.environment} />
               <Item
                 label="PAYPAL_CLIENT_ID"
-                value={result.hasClientId ? result.clientIdPreview : "missing"}
+                value={storedResult.hasClientId ? storedResult.clientIdPreview : "missing"}
               />
               <Item
                 label="PAYPAL_CLIENT_SECRET"
                 value={
-                  !result.hasClientSecret
+                  !storedResult.hasClientSecret
                     ? "missing"
-                    : result.sameValue
+                    : storedResult.sameValue
                       ? "same as client ID (invalid)"
                       : "set"
                 }
               />
-              <Item label="Token request" value={result.ok ? "accepted" : "rejected"} />
+              <Item label="Token request" value={storedResult.ok ? "accepted" : "rejected"} />
             </dl>
           </>
         ) : null}
 
         <button
           type="button"
-          onClick={run}
-          disabled={loading}
+          onClick={runStored}
+          disabled={storedLoading}
           className="mt-6 rounded-md border border-border px-4 py-2 text-xs font-semibold hover:bg-accent disabled:opacity-50"
         >
-          {loading ? "Checking…" : "Re-check"}
+          {storedLoading ? "Checking…" : "Re-check stored credentials"}
         </button>
+      </div>
+
+      <div className="mt-8 rounded-md border border-border p-6">
+        <h2 className="text-sm font-semibold">Update / test new credentials</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Paste the values from the same PayPal app and same mode (Live or Sandbox). The test only
+          validates the pair — it does not change the stored secrets until you save them.
+        </p>
+
+        <form onSubmit={handleTest} className="mt-6 space-y-4">
+          <div>
+            <label htmlFor="paypal-client-id" className="block text-xs font-semibold">
+              PayPal Client ID
+            </label>
+            <input
+              id="paypal-client-id"
+              type="text"
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              placeholder="AeX..."
+              maxLength={256}
+              required
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="paypal-client-secret" className="block text-xs font-semibold">
+              PayPal Client Secret
+            </label>
+            <input
+              id="paypal-client-secret"
+              type="password"
+              value={clientSecret}
+              onChange={(e) => setClientSecret(e.target.value)}
+              placeholder="EJx..."
+              maxLength={256}
+              required
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="paypal-env" className="block text-xs font-semibold">
+              Environment
+            </label>
+            <select
+              id="paypal-env"
+              value={environment}
+              onChange={(e) => setEnvironment(e.target.value as "sandbox" | "live")}
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="live">Live (real payments)</option>
+              <option value="sandbox">Sandbox (test only)</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            disabled={testLoading || !clientId || !clientSecret}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {testLoading ? "Testing…" : "Test credentials"}
+          </button>
+        </form>
+
+        {testResult ? (
+          <div
+            className={`mt-6 rounded-md px-4 py-3 text-sm font-semibold ${
+              testResult.ok
+                ? "bg-primary/10 text-foreground"
+                : "bg-destructive/10 text-destructive"
+            }`}
+          >
+            {testResult.ok
+              ? `These credentials are valid in ${testResult.environment} mode. You can save them now.`
+              : (testResult.error ?? "These credentials are not usable.")}
+          </div>
+        ) : null}
+
+        <div className="mt-6 rounded-md bg-accent/50 px-4 py-3 text-xs text-muted-foreground">
+          To save these values to the project secrets, click the button below and re-enter them in
+          the secure form. Both values must come from the same PayPal app and same mode.
+        </div>
       </div>
     </div>
   );
