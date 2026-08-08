@@ -91,6 +91,18 @@ export async function verifyPaypalCredentials(): Promise<PaypalCredentialCheck> 
   const clientId = process.env["PAYPAL_CLIENT_ID"] ?? "";
   const clientSecret = process.env["PAYPAL_CLIENT_SECRET"] ?? "";
   const environment = paypalEnvironment();
+  return testPaypalCredentials(clientId, clientSecret, environment);
+}
+
+/**
+ * Tests a candidate PayPal client ID / secret pair against the chosen environment.
+ * Safe to call with user-provided input: it only returns a status, never the secrets.
+ */
+export async function testPaypalCredentials(
+  clientId: string,
+  clientSecret: string,
+  environment: PaypalEnv,
+): Promise<PaypalCredentialCheck> {
   const base: PaypalCredentialCheck = {
     ok: false,
     environment,
@@ -102,19 +114,19 @@ export async function verifyPaypalCredentials(): Promise<PaypalCredentialCheck> 
   };
 
   if (!clientId || !clientSecret) {
-    return { ...base, error: "PAYPAL_CLIENT_ID and/or PAYPAL_CLIENT_SECRET are missing." };
+    return { ...base, error: "Client ID and Client Secret are required." };
   }
   if (base.sameValue) {
     return {
       ...base,
-      error: "PAYPAL_CLIENT_SECRET is the same value as PAYPAL_CLIENT_ID — paste the app's secret.",
+      error: "Client Secret is the same value as Client ID — paste the app's secret.",
     };
   }
 
+  const baseUrl = environment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
   try {
-    cachedToken = null;
     const basic = btoa(`${clientId}:${clientSecret}`);
-    const res = await fetch(`${apiBase()}/v1/oauth2/token`, {
+    const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
       method: "POST",
       headers: {
         Authorization: `Basic ${basic}`,
@@ -127,7 +139,7 @@ export async function verifyPaypalCredentials(): Promise<PaypalCredentialCheck> 
     if (res.status === 401 || body.error === "invalid_client") {
       return {
         ...base,
-        error: `PayPal rejected these credentials in ${environment} mode. Make sure the ID and secret come from the same app and that PAYPAL_ENV matches that app's mode.`,
+        error: `PayPal rejected these credentials in ${environment} mode. Make sure the ID and secret come from the same app and that the environment matches that app's mode.`,
       };
     }
     return { ...base, error: `PayPal auth failed (${res.status}).` };
