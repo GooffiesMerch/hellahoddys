@@ -31,11 +31,28 @@ export const getPaypalConfig = createServerFn({ method: "GET" }).handler(async (
   };
 });
 
+/** Tests a candidate PayPal client ID / secret pair against the chosen environment. */
+export const testPaypalCredentials = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        clientId: z.string().min(1).max(256),
+        clientSecret: z.string().min(1).max(256),
+        environment: z.enum(["sandbox", "live"]),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data }) => {
+    const { testPaypalCredentials: test } = await import("./paypal.server");
+    return await test(data.clientId, data.clientSecret, data.environment);
+  });
+
 /** Creates a pending order plus a PayPal order for the current cart. */
 export const checkPaypalCredentials = createServerFn({ method: "GET" }).handler(async () => {
   const { verifyPaypalCredentials } = await import("./paypal.server");
   return await verifyPaypalCredentials();
 });
+
 
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
