@@ -10,6 +10,7 @@ import {
   completeCheckout,
   createCheckoutSession,
   getPaypalConfig,
+  checkPaypalCredentials,
 } from "@/lib/payments.functions";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
@@ -362,12 +363,15 @@ interface PaymentStepProps {
 
 function PaymentStep({ recipient, items, shippingMethod, total, onBack }: PaymentStepProps) {
   const loadConfig = useServerFn(getPaypalConfig);
+  const validate = useServerFn(checkPaypalCredentials);
   const startCheckout = useServerFn(createCheckoutSession);
   const finalize = useServerFn(completeCheckout);
   const navigate = useNavigate();
   const { clear } = useCart();
 
   const [clientId, setClientId] = useState<string | null>(null);
+  const [credentialError, setCredentialError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   // Re-opening the PayPal window must not create a second order every click.
@@ -375,13 +379,18 @@ function PaymentStep({ recipient, items, shippingMethod, total, onBack }: Paymen
 
   useEffect(() => {
     let active = true;
-    loadConfig({})
-      .then((c) => active && setClientId(c.clientId))
-      .catch(() => active && setError("PayPal is not configured yet."));
+    Promise.all([loadConfig({}), validate({})])
+      .then(([config, check]) => {
+        if (!active) return;
+        setClientId(config.clientId);
+        setCredentialError(check.ok ? null : (check.error ?? "PayPal credentials are invalid."));
+      })
+      .catch(() => active && setCredentialError("PayPal is not configured yet."))
+      .finally(() => active && setChecking(false));
     return () => {
       active = false;
     };
-  }, [loadConfig]);
+  }, [loadConfig, validate]);
 
   return (
     <div className="mx-auto max-w-[900px] px-6 lg:px-10 py-12">
@@ -403,7 +412,13 @@ function PaymentStep({ recipient, items, shippingMethod, total, onBack }: Paymen
         </div>
         {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
         {status && <p className="mb-4 text-sm text-muted-foreground">{status}</p>}
-        {clientId ? (
+        {checking ? (
+          <p className="text-sm text-muted-foreground">Verifying payment setup…</p>
+        ) : credentialError ? (
+          <div className="rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            Payments are temporarily unavailable. {credentialError}
+          </div>
+        ) : clientId ? (
           <PayPalScriptProvider
             options={{ clientId, currency: "USD", intent: "capture" }}
           >
