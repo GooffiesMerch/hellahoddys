@@ -24,6 +24,7 @@ import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AdminPrintfulRouteImport } from './routes/admin.printful'
+import { Route as AdminPaypalRouteImport } from './routes/admin.paypal'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as ShopCategoryIndexRouteImport } from './routes/shop.$category.index'
 import { Route as ShopCategorySubRouteImport } from './routes/shop.$category.$sub'
@@ -105,6 +106,11 @@ const AdminPrintfulRoute = AdminPrintfulRouteImport.update({
   path: '/admin/printful',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPaypalRoute = AdminPaypalRouteImport.update({
+  id: '/admin/paypal',
+  path: '/admin/paypal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/admin/orders',
   path: '/admin/orders',
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/paypal': typeof AdminPaypalRoute
   '/admin/printful': typeof AdminPrintfulRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/paypal': typeof AdminPaypalRoute
   '/admin/printful': typeof AdminPrintfulRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -184,6 +192,7 @@ export interface FileRoutesById {
   '/shop': typeof ShopRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/paypal': typeof AdminPaypalRoute
   '/admin/printful': typeof AdminPrintfulRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -208,6 +217,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/sitemap.xml'
     | '/admin/orders'
+    | '/admin/paypal'
     | '/admin/printful'
     | '/checkout/return'
     | '/collections/$slug'
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/sitemap.xml'
     | '/admin/orders'
+    | '/admin/paypal'
     | '/admin/printful'
     | '/checkout/return'
     | '/collections/$slug'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/sitemap.xml'
     | '/admin/orders'
+    | '/admin/paypal'
     | '/admin/printful'
     | '/checkout/return'
     | '/collections/$slug'
@@ -272,6 +284,7 @@ export interface RootRouteChildren {
   ShopRoute: typeof ShopRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminPaypalRoute: typeof AdminPaypalRoute
   AdminPrintfulRoute: typeof AdminPrintfulRoute
   OrdersIdRoute: typeof OrdersIdRoute
   ProductsHandleRoute: typeof ProductsHandleRoute
@@ -386,6 +399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPrintfulRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/paypal': {
+      id: '/admin/paypal'
+      path: '/admin/paypal'
+      fullPath: '/admin/paypal'
+      preLoaderRoute: typeof AdminPaypalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/admin/orders'
@@ -485,6 +505,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRoute: ShopRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminPaypalRoute: AdminPaypalRoute,
   AdminPrintfulRoute: AdminPrintfulRoute,
   OrdersIdRoute: OrdersIdRoute,
   ProductsHandleRoute: ProductsHandleRoute,
@@ -494,13 +515,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

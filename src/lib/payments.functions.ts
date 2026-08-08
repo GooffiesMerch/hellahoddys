@@ -32,6 +32,11 @@ export const getPaypalConfig = createServerFn({ method: "GET" }).handler(async (
 });
 
 /** Creates a pending order plus a PayPal order for the current cart. */
+export const checkPaypalCredentials = createServerFn({ method: "GET" }).handler(async () => {
+  const { verifyPaypalCredentials } = await import("./paypal.server");
+  return await verifyPaypalCredentials();
+});
+
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
     z

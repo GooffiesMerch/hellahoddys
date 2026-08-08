@@ -72,3 +72,66 @@ export function getPaypalErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   return "PayPal request failed";
 }
+
+export interface PaypalCredentialCheck {
+  ok: boolean;
+  environment: PaypalEnv;
+  hasClientId: boolean;
+  hasClientSecret: boolean;
+  clientIdPreview: string;
+  sameValue: boolean;
+  error: string | null;
+}
+
+/**
+ * Verifies PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET / PAYPAL_ENV belong together by
+ * requesting an access token from the configured environment. Never returns secrets.
+ */
+export async function verifyPaypalCredentials(): Promise<PaypalCredentialCheck> {
+  const clientId = process.env["PAYPAL_CLIENT_ID"] ?? "";
+  const clientSecret = process.env["PAYPAL_CLIENT_SECRET"] ?? "";
+  const environment = paypalEnvironment();
+  const base: PaypalCredentialCheck = {
+    ok: false,
+    environment,
+    hasClientId: Boolean(clientId),
+    hasClientSecret: Boolean(clientSecret),
+    clientIdPreview: clientId ? `${clientId.slice(0, 8)}…${clientId.slice(-4)}` : "",
+    sameValue: Boolean(clientId) && clientId === clientSecret,
+    error: null,
+  };
+
+  if (!clientId || !clientSecret) {
+    return { ...base, error: "PAYPAL_CLIENT_ID and/or PAYPAL_CLIENT_SECRET are missing." };
+  }
+  if (base.sameValue) {
+    return {
+      ...base,
+      error: "PAYPAL_CLIENT_SECRET is the same value as PAYPAL_CLIENT_ID — paste the app's secret.",
+    };
+  }
+
+  try {
+    cachedToken = null;
+    const basic = btoa(`${clientId}:${clientSecret}`);
+    const res = await fetch(`${apiBase()}/v1/oauth2/token`, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${basic}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "grant_type=client_credentials",
+    });
+    if (res.ok) return { ...base, ok: true };
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (res.status === 401 || body.error === "invalid_client") {
+      return {
+        ...base,
+        error: `PayPal rejected these credentials in ${environment} mode. Make sure the ID and secret come from the same app and that PAYPAL_ENV matches that app's mode.`,
+      };
+    }
+    return { ...base, error: `PayPal auth failed (${res.status}).` };
+  } catch (error) {
+    return { ...base, error: getPaypalErrorMessage(error) };
+  }
+}
